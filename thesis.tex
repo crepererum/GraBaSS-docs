@@ -1,8 +1,8 @@
 \documentclass[%
-	11pt,% bigger font
-	a4paper,% paper size
+	fontsize=11pt,% bigger font
+	paper=a4,% paper size
 	pagesize,% set pagesize in PDF
-	oneside,% like a book
+	twoside=false,% =oneside
 	listof=totoc,%add list of figures to toc
 	draft% TODO remove this!
 ]{scrbook}
@@ -11,12 +11,15 @@
 %---------PACKAGES----------------------
 %---------------------------------------
 
+% language
+\usepackage[english]{babel}
+
 % font config
 \usepackage{libertine}
 \usepackage[T1]{fontenc}
 
 % microtype
-\usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
+\usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=nonfrench,factor=1100,stretch=10,shrink=10]{microtype}
 % activate={true,nocompatibility} - activate protrusion and expansion
 % final - enable microtype; use "draft" to disable
 % tracking=true, kerning=true, spacing=true - activate these techniques
@@ -58,14 +61,16 @@
 % links
 \hypersetup{
 	colorlinks,% colored text instead of borders
-	linkcolor=black,%  black links
+	linkcolor=black,% black inter document links
+	urlcolor=black,% black urls
 	final% also work in draft mode, TODO remove this!
 }
 
 % tikz
 \usetikzlibrary{arrows}
 \tikzset{
-	>=stealth'
+	>=stealth',
+	axis/.style={->, very thick, >=stealth'}
 }
 
 
@@ -93,58 +98,17 @@
 
 \mainmatter
 \chapter{How to beat the system}
-Consider the following, constructed dataset: Generate some random points $(x, y, z) \in \left[0, 1\right)^3$, that satisfy the following constraint:
+The method described in this thesis has some weaknesses. I will construct a dateset, which is not processed very well and I will discuss, why this type of data is not very common.
+
+\section{Constructing a special dataset}
+Consider the following a dataset, that is made of many random points $(x, y, z) \in \left[0, 1\right)^3$, that satisfy the following constraint:
 \begin{equation}\label{eq:beat}
 	(x + y + z) \bmod 1 = 0
 \end{equation}
-If you sample enough points using a good uniform pseudo \gls{rng}, you will get the following destributions:
+The points are uniform distributed if you project them on one or two dimensions. But if you calculate the three dimensional distribution, the points do not show a uniform distribution. (see Figure~\ref{fig:beat}). Because the generated points have two degrees of freedom, the two dimensional distribution test will fail. It is also possible to generate datasets with even more degrees of freedom using the same technique.\footnote{You may not be able to imagine datasets with more than three dimensions. For 4 dimensions, you find some help: \url{http://crepererum.github.io/brain4D/\#constructed.csv}}
 \begin{figure}
-	\begin{tikzpicture}[scale = 5.0]
-		\begin{scope}
-			\foreach \name [count=\d from 0] in {x,y,z} {
-				\begin{scope}[yshift=-\d*12]
-					\draw (-0.1,0) node {\name};
-					\begin{scope}[scale=0.8]
-						\draw[->] (0,0) -- (1,0);
-						\foreach \x in {0,...,9} {
-							\fill[colcontrast] (\x/10,0) circle(0.2pt);
-						}
-					\end{scope}
-				\end{scope}
-			}
-		\end{scope}
-		\begin{scope}[shift={(0,-1.7)}]
-			\foreach \name [count=\d from 0] in {{x,y},{y,z},{z,x}} {
-				\begin{scope}[xshift=\d*25]
-					\draw (-0.1,-0.1) node {\name};
-					\begin{scope}[scale=0.4]
-						\draw[->] (0,0) -- (1,0);
-						\draw[->] (0,0) -- (0,1);
-						\foreach \x in {0,...,9} {
-							\foreach \y in {0,...,9} {
-								\fill[colcontrast] (\x/10,\y/10) circle(0.2pt);
-							}
-						}
-					\end{scope}
-				\end{scope}
-			}
-		\end{scope}
-		\begin{scope}[shift={(1.2,-0.9)}]
-			\draw (-0.1,-0.1) node {x,y,z};
-			\begin{scope}[scale=0.8]
-				\draw[->] (0,0,0) -- (1,0,0);
-				\draw[->] (0,0,0) -- (0,1,0);
-				\draw[->] (0,0,0) -- (0,0,-1);
-				\foreach \x in {0,...,9} {
-					\foreach \y in {0,...,9} {
-						\pgfmathtruncatemacro{\z}{mod(\x+\y,10)}
-						\fill[colcontrast] (\x/10,\y/10,-\z/10) circle(0.3pt-0.1pt*\z/10);
-					}
-				}
-			\end{scope}
-		\end{scope}
-	\end{tikzpicture}
-	\caption{Situation described in \ref{eq:beat}}
+	\input{figures/beat.tex}
+	\caption{Situation described in Equation~\ref{eq:beat}}
 	\label{fig:beat}
 \end{figure}
 
