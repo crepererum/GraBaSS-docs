@@ -1,0 +1,158 @@
+\documentclass[%
+	11pt,% bigger font
+	a4paper,% paper size
+	pagesize,% set pagesize in PDF
+	oneside,% like a book
+	listof=totoc,%add list of figures to toc
+	draft% TODO remove this!
+]{scrbook}
+
+%---------------------------------------
+%---------PACKAGES----------------------
+%---------------------------------------
+
+% font config
+\usepackage{libertine}
+\usepackage[T1]{fontenc}
+
+% microtype
+\usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1100,stretch=10,shrink=10]{microtype}
+% activate={true,nocompatibility} - activate protrusion and expansion
+% final - enable microtype; use "draft" to disable
+% tracking=true, kerning=true, spacing=true - activate these techniques
+% factor=1100 - add 10% to the protrusion amount (default is 1000)
+% stretch=10, shrink=10 - reduce stretchability/shrinkability (default is 20/20)
+
+% links
+\usepackage{hyperref}
+
+% math
+\usepackage{amsmath}
+
+% graphics
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+
+% glossar
+% dep: hyperref
+\usepackage[
+	toc%add to toc
+]{glossaries}
+
+% TODO remove this!
+% debug packages
+\usepackage{blindtext}
+
+
+%---------------------------------------
+%---------SETTINGS----------------------
+%---------------------------------------
+
+% general informaion
+\title{Some funny words}
+\author{Marco Neumann}
+
+% color
+\definecolor{colcontrast}{RGB}{255,0,0}
+
+% links
+\hypersetup{
+	colorlinks,% colored text instead of borders
+	linkcolor=black,%  black links
+	final% also work in draft mode, TODO remove this!
+}
+
+% tikz
+\usetikzlibrary{arrows}
+\tikzset{
+	>=stealth'
+}
+
+
+%---------------------------------------
+%---------GLOSSARY----------------------
+%---------------------------------------
+
+\newglossaryentry{random number generator}
+{
+	name={Random Number Generator},
+	description={Generates random numbers}
+}
+
+\newacronym{rng}{RNG}{\glslink{random number generator}{Random Number Generator}}
+
+\makeglossaries% build glossary
+\glsunsetall% fix acronyms
+
+
+\begin{document}
+
+\frontmatter
+\maketitle
+\tableofcontents
+
+\mainmatter
+\chapter{How to beat the system}
+Consider the following, constructed dataset: Generate some random points $(x, y, z) \in \left[0, 1\right)^3$, that satisfy the following constraint:
+\begin{equation}\label{eq:beat}
+	(x + y + z) \bmod 1 = 0
+\end{equation}
+If you sample enough points using a good uniform pseudo \gls{rng}, you will get the following destributions:
+\begin{figure}
+	\begin{tikzpicture}[scale = 5.0]
+		\begin{scope}
+			\foreach \name [count=\d from 0] in {x,y,z} {
+				\begin{scope}[yshift=-\d*12]
+					\draw (-0.1,0) node {\name};
+					\begin{scope}[scale=0.8]
+						\draw[->] (0,0) -- (1,0);
+						\foreach \x in {0,...,9} {
+							\fill[colcontrast] (\x/10,0) circle(0.2pt);
+						}
+					\end{scope}
+				\end{scope}
+			}
+		\end{scope}
+		\begin{scope}[shift={(0,-1.7)}]
+			\foreach \name [count=\d from 0] in {{x,y},{y,z},{z,x}} {
+				\begin{scope}[xshift=\d*25]
+					\draw (-0.1,-0.1) node {\name};
+					\begin{scope}[scale=0.4]
+						\draw[->] (0,0) -- (1,0);
+						\draw[->] (0,0) -- (0,1);
+						\foreach \x in {0,...,9} {
+							\foreach \y in {0,...,9} {
+								\fill[colcontrast] (\x/10,\y/10) circle(0.2pt);
+							}
+						}
+					\end{scope}
+				\end{scope}
+			}
+		\end{scope}
+		\begin{scope}[shift={(1.2,-0.9)}]
+			\draw (-0.1,-0.1) node {x,y,z};
+			\begin{scope}[scale=0.8]
+				\draw[->] (0,0,0) -- (1,0,0);
+				\draw[->] (0,0,0) -- (0,1,0);
+				\draw[->] (0,0,0) -- (0,0,-1);
+				\foreach \x in {0,...,9} {
+					\foreach \y in {0,...,9} {
+						\pgfmathtruncatemacro{\z}{mod(\x+\y,10)}
+						\fill[colcontrast] (\x/10,\y/10,-\z/10) circle(0.3pt-0.1pt*\z/10);
+					}
+				}
+			\end{scope}
+		\end{scope}
+	\end{tikzpicture}
+	\caption{Situation described in \ref{eq:beat}}
+	\label{fig:beat}
+\end{figure}
+
+\appendix
+
+\backmatter
+\listoffigures
+\printglossaries
+
+\end{document}
+

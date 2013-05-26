@@ -1,0 +1,16 @@
+# build files
+*.aux
+*.fdb_latexmk
+*.fls
+*.glg
+*.glo
+*.gls
+*.ist
+*.lof
+*.log
+*.out
+*.toc
+
+# build results
+*.pdf
+
