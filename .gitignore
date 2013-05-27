@@ -1,5 +1,8 @@
 # build files
 *.aux
+*.bbl
+*.bcf
+*.blg
 *.fdb_latexmk
 *.fls
 *.glg
@@ -9,6 +12,7 @@
 *.lof
 *.log
 *.out
+*.run.xml
 *.toc
 
 # build results

@@ -19,18 +19,23 @@
 \usepackage[T1]{fontenc}
 
 % microtype
-\usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=nonfrench,factor=1100,stretch=10,shrink=10]{microtype}
-% activate={true,nocompatibility} - activate protrusion and expansion
-% final - enable microtype; use "draft" to disable
-% tracking=true, kerning=true, spacing=true - activate these techniques
-% factor=1100 - add 10% to the protrusion amount (default is 1000)
-% stretch=10, shrink=10 - reduce stretchability/shrinkability (default is 20/20)
+\usepackage[
+	activate={true,nocompatibility},% activate protrusion and expansion
+	final,% enable microtype; use "draft" to disable
+	tracking=true,% activate these techniques
+	kerning=true,% -''-
+	spacing=nonfrench,% activate and supress warning
+	factor=1100,% add 10% to the protrusion amount (default is 1000)
+	stretch=10,% reduce stretchability/shrinkability (default is 20/20)
+	shrink=10% -''-
+]{microtype}
 
 % links
 \usepackage{hyperref}
 
 % math
 \usepackage{amsmath}
+\usepackage{amssymb}
 
 % graphics
 \usepackage{tikz}
@@ -39,8 +44,19 @@
 % glossar
 % dep: hyperref
 \usepackage[
-	toc%add to toc
+	toc% add to toc
 ]{glossaries}
+
+% bibtex
+% dep: hyperref
+\usepackage[
+	backend=biber,% nice fast backend
+	style=alphabetic% how the shortcuts should look like
+]{biblatex}
+
+% units
+% dep: amssymb
+\usepackage{siunitx}
 
 % TODO remove this!
 % debug packages
@@ -56,13 +72,15 @@
 \author{Marco Neumann}
 
 % color
-\definecolor{colcontrast}{RGB}{255,0,0}
+\definecolor{colcontrast}{RGB}{40,100,40}
+\definecolor{colcontrast2}{RGB}{40,40,100}
 
 % links
 \hypersetup{
 	colorlinks,% colored text instead of borders
 	linkcolor=black,% black inter document links
 	urlcolor=black,% black urls
+	citecolor=black,% black cite
 	final% also work in draft mode, TODO remove this!
 }
 
@@ -72,6 +90,14 @@
 	>=stealth',
 	axis/.style={->, very thick, >=stealth'}
 }
+\newcommand*\circled[1]{\tikz[baseline={($(char.base) - (0,0.5pt)$)}]{
+	\node[shape=circle,draw,inner sep=0.5pt,font=\scriptsize,thick] (char) {\textsf{#1}};}}
+
+% bibtex
+\addbibresource{citiation.bib}
+
+% math macros
+\newcommand{\set}[1]{\mathbb{#1}}
 
 
 %---------------------------------------
@@ -100,7 +126,7 @@
 \chapter{How to beat the system}
 The method described in this thesis has some weaknesses. I will construct a dateset, which is not processed very well and I will discuss, why this type of data is not very common.
 
-\section{Constructing a special dataset}
+\section{Constructing a special dataset}\label{sec:constr}
 Consider the following a dataset, that is made of many random points $(x, y, z) \in \left[0, 1\right)^3$, that satisfy the following constraint:
 \begin{equation}\label{eq:beat}
 	(x + y + z) \bmod 1 = 0
@@ -112,11 +138,46 @@ The points are uniform distributed if you project them on one or two dimensions.
 	\label{fig:beat}
 \end{figure}
 
+The problem occures every time, when the dataset contains a subspace with $n \in \set{N}_+$ Dimensions but $m \in \left\{1,\dots,n-1\right\}$ degrees of freedom. Furthermore the dependency of each dimension on the degrees of freedom has to be equal.
+
+\section{Handling this issue}
+Because it datasets with generated dimensions are not very uncommon, I will propose a simple method to handle them. To get a good perfomance on high dimensional datasets, it is not possible to check distributions in subspaces where the size depends on the number of all dimensions. But as shown in \cite{journals/prl/SharmaP07}, a PCA can be computed in $O\left( d^2h + d^2n \right)$ where $h$ is the number of degrees of freedom. After this step, the algorithm will find the most common subspaces.
+
+
+\chapter{Datasets}
+High dimensional datasets are not a very common research topics. In this chapter I will describe some data sources and possible applications of the described algorithm. I also show some interpretations of subspaces in different datasets and some failed approaches of finding them. To get, isolate and preprocess the data I've used some scripts. Because I think open research should not only contain open publications but also open data sources, you can find the scripts and some notes about them online.\footnote{\url{https://github.com/crepererum/GSD}} Should you have some questions, find a bug or want to contribute, feel free to use the issue tracker or file a pull request.
+
+\section{Audio Spectrum}
+An audio spectrum can characterize the underlying material. I analyzed the songs from the following collections:
+\begin{itemize}
+	\item Daft Punk -- Random Access Memories (\circled{P}2013 by Daft Life, Columbia), \num{13} songs
+	\item Mayday 2013 -- Never Stop Raving (\circled{C}2013 by Contor Records GmbH), \num{60} songs
+\end{itemize}
+I converted the audio to a sample rate of \SI{44100}{\hertz}. After it, I splitted the audio files into parts containing \num{4096} parts, applied the Hamming window and passed it to a FFT. The FFT produces a output vector with \num{4096} values, but only \num{2048} values are usable, because the spectrum should be mirrored. The values are normalized and converted to \si{\decibel}. Then I calculated the mean of \num{32} parts to supress noise, which is a common audio effect in modern music, but may also effect classical records. This mean vector has a length of \num{2048} and is written to a file. So, the mean of \num{32} parts is one data element. Figure~\ref{fig:audio} shows some of the results.
+\begin{figure}
+	\input{figures/audio.tex}
+	\caption{Audio spectrum}
+	\label{fig:audio}
+\end{figure}
+
+The subspace analyzis performance well but gives boring results. Meanly the first and last bins of the spectrum forms one subsapce and the middle part describes another.
+
+\section{Drug Database}
+
+
 \appendix
 
+
 \backmatter
+
 \listoffigures
+
 \printglossaries
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography
 
 \end{document}
 
