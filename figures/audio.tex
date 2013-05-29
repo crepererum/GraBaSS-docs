@@ -1,25 +1,28 @@
 \begin{tikzpicture}
 	\def\xmin{0}
-	\def\xmax{2.048}
-	\def\xstep{0.2}
+	\def\xmax{2.205}
 	\def\ymin{-120}
 	\def\ymax{0}
-	\def\ystep{5}
 
 	\begin{scope}[xscale=5,yscale=0.04]
-		\draw[style=help lines, ystep=20, xstep=0.256] (\xmin,\ymin) grid(\xmax,\ymax);
+		\draw[style=help lines, ystep=20, xstep=0.2205] (\xmin,\ymin) grid(\xmax,\ymax);
 
-		\foreach \x in {\xmin,0.256,...,\xmax} {
-			\node at (\x,\ymin) [below]{\num[round-precision=3,round-mode=places]{\x}};
+		\foreach \x in {\xmin,0.2205,...,2.210} {
+			\mycalc{\hz}{\x*10000}
+
+			\node at (\x,\ymin) [below]{\num[round-precision=0,round-mode=places]{\hz}};
 		}
 		\foreach \y in {\ymin,-100,...,\ymax} {
 			\node at (\xmin,\y) [left]{\num{\y}};
 		}
 
-		\draw[colcontrast] plot[smooth] file{data/audio1.dat} node[right]{example 1};
-		\draw[colcontrast2] plot[smooth] file{data/audio2.dat} node[right]{example 2};
+		\pgfmathsetmacro{\xfactor}{2.205/2.048}
+		\begin{scope}[xscale=\xfactor]
+			\draw[colcontrast] plot[smooth] file{data/audio1.dat} node[right]{example 1};
+			\draw[colcontrast2] plot[smooth] file{data/audio2.dat} node[right]{example 2};
+		\end{scope}
 
-		\draw[axis] (\xmin,\ymin) -- (\xmax,\ymin) node[right]{\si{\kilo\hertz}};
+		\draw[axis] (\xmin,\ymin) -- (\xmax,\ymin) node[right]{\si{\hertz}};
 		\draw[axis] (\xmin,\ymin) -- (\xmin,\ymax) node[above]{\si{\decibel}};
 	\end{scope}
 \end{tikzpicture}

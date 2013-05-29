@@ -40,6 +40,7 @@
 % graphics
 \usepackage{tikz}
 \usepackage{tikz-3dplot}
+\usepackage{pgfplots}
 
 % glossar
 % dep: hyperref
@@ -90,14 +91,22 @@
 	>=stealth',
 	axis/.style={->, very thick, >=stealth'}
 }
-\newcommand*\circled[1]{\tikz[baseline={($(char.base) - (0,0.5pt)$)}]{
-	\node[shape=circle,draw,inner sep=0.5pt,font=\scriptsize,thick] (char) {\textsf{#1}};}}
+\newcommand*\circled[1]{\tikz[baseline={($(char.south) + (0,0.5pt)$)}]{
+	\node[shape=circle,draw,inner sep=0.5pt,font=\tiny,thick] (char) {\textsf{#1}};}}
 
 % bibtex
 \addbibresource{citiation.bib}
 
 % math macros
 \newcommand{\set}[1]{\mathbb{#1}}
+
+% calculation helper
+\newcommand{\mycalc}[2]{
+	\pgfkeys{/pgf/fpu, /pgf/fpu/output format=fixed}
+	\pgfmathparse{#2}
+	\edef#1{\pgfmathresult}
+	\pgfkeys{/pgf/fpu=false}
+}
 
 
 %---------------------------------------
