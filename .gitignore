@@ -8,9 +8,12 @@
 *.glg
 *.glo
 *.gls
+*.ilg
 *.ist
 *.lof
 *.log
+*.nlo
+*.nls
 *.out
 *.run.xml
 *.toc

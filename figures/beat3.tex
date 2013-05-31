@@ -1,0 +1,14 @@
+\begin{tikzpicture}[scale = 5.0]
+	\begin{scope}[scale=1.0]
+		\draw[axis] (0,0,0) -- (1,0,0) node[right]{$x$};
+		\draw[axis] (0,0,0) -- (0,1,0) node[above]{$y$};
+		\draw[axis] (0,0,0) -- (0,0,-1) node[above right]{$z$};
+		\foreach \x in {0,...,9} {
+			\foreach \y in {0,...,9} {
+				\pgfmathsetmacro{\z}{mod(\x+\y,10)}
+				\fill[colcontrast] (\x/10,\y/10,-\z/10) circle(0.3pt-0.1pt*\z/10);
+			}
+		}
+	\end{scope}
+\end{tikzpicture}
+

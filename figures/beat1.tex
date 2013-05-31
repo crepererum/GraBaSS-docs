@@ -1,0 +1,13 @@
+\begin{tikzpicture}[scale = 5.0]
+	\foreach \name [count=\d from 0] in {x,y,z} {
+		\begin{scope}[yshift=-\d*15]
+			\begin{scope}[scale=0.5]
+				\draw[axis] (0,0) -- (1,0) node[right]{$\name$};
+				\foreach \x in {0,...,9} {
+					\fill[colcontrast] (\x/10,0) circle(0.5pt);
+				}
+			\end{scope}
+		\end{scope}
+	}
+\end{tikzpicture}
+

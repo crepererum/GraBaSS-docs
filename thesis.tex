@@ -59,6 +59,12 @@
 % dep: amssymb
 \usepackage{siunitx}
 
+% subfigures
+\usepackage{subfig}
+
+% list of symbols
+\usepackage[intoc]{nomencl}
+
 % TODO remove this!
 % debug packages
 \usepackage{blindtext}
@@ -75,6 +81,8 @@
 % color
 \definecolor{colcontrast}{RGB}{40,100,40}
 \definecolor{colcontrast2}{RGB}{40,40,100}
+\definecolor{colcontrast3}{RGB}{80,20,80}
+\definecolor{colcontrast4}{RGB}{80,80,20}
 
 % links
 \hypersetup{
@@ -86,10 +94,15 @@
 }
 
 % tikz
-\usetikzlibrary{arrows}
+\usetikzlibrary{
+	arrows,
+	positioning
+}
 \tikzset{
 	>=stealth',
-	axis/.style={->, very thick, >=stealth'}
+	axis/.style={->, very thick, >=stealth'},
+	graphedge/.style={ultra thick},
+	graphnode/.style={circle, draw}
 }
 \newcommand*\circled[1]{\tikz[baseline={($(char.south) + (0,0.5pt)$)}]{
 	\node[shape=circle,draw,inner sep=0.5pt,font=\tiny,thick] (char) {\textsf{#1}};}}
@@ -97,8 +110,16 @@
 % bibtex
 \addbibresource{citiation.bib}
 
+% list of figures
+\captionsetup{lofdepth=2}
+
+% list of symbols
+\makenomenclature
+\renewcommand{\nomname}{List of Symbols}
+
 % math macros
 \newcommand{\set}[1]{\mathbb{#1}}
+\newcommand{\card}[1]{\left|#1\right|}
 
 % calculation helper
 \newcommand{\mycalc}[2]{
@@ -107,6 +128,14 @@
 	\edef#1{\pgfmathresult}
 	\pgfkeys{/pgf/fpu=false}
 }
+
+%---------------------------------------
+%---------LIST OF SYMBOLS---------------
+%---------------------------------------
+\nomenclature{$D$}{Set of all dimenions}
+\nomenclature{$\card{D}$}{Total number of dimenions}
+\nomenclature{$N$}{Set of all objects}
+\nomenclature{$\card{N}$}{Total number of objects}
 
 
 %---------------------------------------
@@ -132,6 +161,44 @@
 \tableofcontents
 
 \mainmatter
+\chapter{Designing a high perfomance algorithm}
+To handle current and future big datasets a special approach is required. In this chapter, I will design a high perfomance algorithm that is able to handle this task. The main goal is a method that does not beat the comlexity of $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} + \card{D}^2 \cdot \card{N} )$. This complexity is a good upper bound. It combines the bounds of two different task. The first one is the preprocessing and structure detection of all objects in all dimensions. $O\left( D \cdot N \right)$ would be enough to normalize the data, but $O\left( D \cdot N \cdot \log{N} \right)$ allowes some better methods like sorting. The second part is the detection of relations between all dimensions, which could be done in $O\left( D^2 \right)$. Because reducing the dimenions to a fixed set of features does honor a non fixed number of elements, a good method needs $O\left( D^2 \cdot N \right)$.
+
+\section{Optimize graph structure}
+\begin{figure}
+	\caption{Different subspaces from different graph preprocessing}
+	\label{fig:opt_graph}
+	\centering
+	\subfloat[\label{subfig:opt_graph1}Too many subspaces]{\input{figures/graph1.tex}}
+	\hfill
+	\subfloat[\label{subfig:opt_graph2}Simple graph distance]{\input{figures/graph2.tex}}
+	\hfill
+	\subfloat[\label{subfig:opt_graph3}Filtered distance with $\alpha=\frac23$]{\input{figures/graph3.tex}}
+	\hfill
+	\subfloat[\label{subfig:opt_graph4}Bidirectional filtered distance with $\alpha=\frac23$]{\input{figures/graph4.tex}}
+\end{figure}
+
+
+\chapter{Implementation}
+For the researcher who want only get a described complexity it is sufficient to use a favorite programming languge or DBMS. But if you want to handle big data before getting to old, it is important to choose the right tools and think about some implementation details. In this chapter I want to descibe and explain my choices and would like to give you some impressions about the implementation process. Some but not all strategies can also be used for other algorithms and may be used for some other work too. I will finish the chapter with some ideas about future improvements.
+
+\section{Choosing a programming language}
+To express the designed algorithm and let the computer do the job it is necessary to write some source code. There are dozend different programming languages out there and every language has its own pros and cons.
+
+A simple and very comfortable choice is a language with a good buildin runtime library.\footnote{What ``good'' means in this context depends on the algorithm that you want to implement and the operations you need.} Python or Matlab is a good choice. Please notice that SQL or other database bound languages are not very portable and suffer when it comes to debugging and flexibility. If the language provided a embedded mathematic system like Matlab, it is easy to map the theoretical terms to the language. Matrix support makes it easy to handle big amounts of data. The key feature of the language should be syntax that does not produce much boiler plate. This is one point where script languages are very good, but lanuages like Java are not. C++ provides a short syntax for many things, but suffers like many other compiled langues when you want a comfortable environment. Typesafety is another point that can be useful because it allowes you to tackle many bugs before you waste your time for runtime tests.
+
+The next point is a good library support for things that the choosen language does not provide. Matrix operations require a special library, escecially if you want to invert or decomposit them. High precision floating point operations and big integer calculation needs a different library. Parsing, code managment or special IO operations is another topic. Also notice that I don't mean the standard library. A well tested and documented library is required. For example NumPy if you use Python.
+
+In addition to the things you as the author and primary user of the implementation finds useful are the problems your team or the consumers need. An exotic language\footnote{Don't know what I mean? Go and find something about APL} may be very cool but if nobody can read your code, your research result doesn't help someone. This does not mean that you have to stuck in old good Java or COBOL, but it means that you have to think about the innovation you want to use. Also think about portability, future development and safety of the language. Safety is important if you don't want to risk the data of your institution or the consumers. You may think that the implementation is only for internal tests but if your results are good it can be the case that your code will be published or used by other persons. Even if low level languages can be insecure when doing unchecked memory operations, also interpreted languages have many weaknesses.
+
+You may ask where this all have to do with high perfomance. The simple answer is: nothing. They make your life easier, but do not provide a fast implementation. So the most important point for my work is performance. And this kills the most high level languages, because they do not provide a fine grained control about data allocation, movement and copying. Even the object overhead of languages like Java and naiv C++ is too big. I had to strip down the calculation core to a simple low level core. But I do not want to loose all high level features. In my eyes, there is currently only one languages that provides this schizophrenia: handcrafted and well written C++. I will give you some rules about hints about the language specific methods in the next section.
+
+\section{Special C++ tips}
+C++ can be used in many different ways, depending on your background, the interfaces you want to use or have to provide and the attributes your program should have. As most other programming languages out there, C++ is avaiable in different standarts and the compiler and STL support differs. One of the best collections of tips for good programming style is \cite{effectiveCpp}. Furthermore I used the new C++11 standard which brings makes many code sections easier to read and more C++ stylish rather than C based. It also avoids many boiler blade an manual memory management. Templates may be the most hated but most also most loved and most essential features of C++. I used them when I find it useful. Some calculations are written in C style because in some cases, the object overhead was to high. Because of the usage of new C++11 featues, the resulting code only compiles with newer versions of GCC and Clang. Microsoft and Intel compilers are not suppported at the time of the writing.
+
+\section{Avoiding reinventing the wheel}
+The STL already provides useful tools that makes programmers life much easier. But it does not provide high level thread operations like fork and join, system operations like memory mapped IO and fast a fast parser library. C++ has a special collection of well designed and reviewed libraries that are note yet a part of the STL: The Boost C++ Libraries. They provide two of the three libraries I was looking for -- the Boost Interprocess library, which implements memory mapped IO and the Spirit V2 library which is a special set of function and templates for parser writing. For high level multi core operations I use another well known library: the TBB, which is designed and published by Intel. All libraries are open source and free which enables researcher to use them for their work.
+
 \chapter{How to beat the system}
 The method described in this thesis has some weaknesses. I will construct a dateset, which is not processed very well and I will discuss, why this type of data is not very common.
 
@@ -140,11 +207,16 @@ Consider the following a dataset, that is made of many random points $(x, y, z) 
 \begin{equation}\label{eq:beat}
 	(x + y + z) \bmod 1 = 0
 \end{equation}
-The points are uniform distributed if you project them on one or two dimensions. But if you calculate the three dimensional distribution, the points do not show a uniform distribution. (see Figure~\ref{fig:beat}). Because the generated points have two degrees of freedom, the two dimensional distribution test will fail. It is also possible to generate datasets with even more degrees of freedom using the same technique.\footnote{You may not be able to imagine datasets with more than three dimensions. For 4 dimensions, you find some help: \url{http://crepererum.github.io/brain4D/\#constructed.csv}}
+The points are uniform distributed if you project them on one or two dimensions. But if you calculate the three dimensional distribution, the points do not show a uniform distribution. (see Figure~\ref{fig:beat}). Because the generated points have two degrees of freedom, the two dimensional distribution test will fail. It is also possible to generate datasets with even more degrees of freedom using the same technique.\footnote{You may not be able to imagine datasets with more than three dimensions. For 4 dimensions, you find some help: \url{http://crepererum.github.io/brain4D/\#constructed}}
 \begin{figure}
-	\input{figures/beat.tex}
 	\caption{Situation described in Equation~\ref{eq:beat}}
 	\label{fig:beat}
+	\subfloat[\label{subfig:beat1}1D views]{\input{figures/beat1.tex}}
+	\hfill
+	\subfloat[\label{subfig:beat2}2D views]{\input{figures/beat2.tex}}
+	\hfill
+	\subfloat[\label{subfig:beat3}3D view]{\input{figures/beat3.tex}}
+	\hfill
 \end{figure}
 
 The problem occures every time, when the dataset contains a subspace with $n \in \set{N}_+$ Dimensions but $m \in \left\{1,\dots,n-1\right\}$ degrees of freedom. Furthermore the dependency of each dimension on the degrees of freedom has to be equal.
@@ -172,6 +244,8 @@ I converted the audio to a sample rate of \SI{44100}{\hertz}. After it, I splitt
 The subspace analyzis performance well but gives boring results. Meanly the first and last bins of the spectrum forms one subsapce and the middle part describes another.
 
 \section{Drug Database}
+Another source of high dimensional data is the list of incredients of drugs. A given set of drugs described by a list of their incredients is processed as followed: Build a list of all incredients in all drugs and bring them into a fixed order. Every incredient forms one dimension. Then build a binary vector for every drug in the database where $1$ describes that a incredient is contained in the drug and $0$ if this is not the case.
+I hoped to find some public drug data bases containing drugs registered in Germany or in the EU. But this was not the case. Either they were only usable via a very limited interface or it would cost me a enorm amount of money to buy a license. Since the open data movement in USA has a very long tradition, it was easy to find an american drug database, that is easy to parse and provides a huge data collection.\footnote{\url{http://dailymed.nlm.nih.gov/dailymed/downloadLabels.cfm}} I provide a parser and converter for this kind of data.
 
 
 \appendix
@@ -180,6 +254,8 @@ The subspace analyzis performance well but gives boring results. Meanly the firs
 \backmatter
 
 \listoffigures
+
+\printnomenclature
 
 \printglossaries
 

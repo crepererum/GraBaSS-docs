@@ -1,0 +1,16 @@
+\begin{tikzpicture}[scale = 5.0]
+	\foreach \namefirst/\namesecond [count=\d from 0] in {x/y,y/z,z/x} {
+		\begin{scope}[yshift=-\d*15]
+			\begin{scope}[scale=0.4]
+				\draw[axis] (0,0) -- (1,0) node[right]{$\namefirst$};
+				\draw[axis] (0,0) -- (0,1) node[above]{$\namesecond$};
+				\foreach \x in {0,...,9} {
+					\foreach \y in {0,...,9} {
+						\fill[colcontrast] (\x/10,\y/10) circle(0.3pt);
+					}
+				}
+			\end{scope}
+		\end{scope}
+	}
+\end{tikzpicture}
+

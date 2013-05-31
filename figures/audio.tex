@@ -10,7 +10,7 @@
 		\foreach \x in {\xmin,0.2205,...,2.210} {
 			\mycalc{\hz}{\x*10000}
 
-			\node at (\x,\ymin) [below]{\num[round-precision=0,round-mode=places]{\hz}};
+			\node at (\x,\ymin) [below, rotate=45, anchor=east,yshift=-4pt]{\num[round-precision=0,round-mode=places]{\hz}};
 		}
 		\foreach \y in {\ymin,-100,...,\ymax} {
 			\node at (\xmin,\y) [left]{\num{\y}};

@@ -1,0 +1,44 @@
+\begin{tikzpicture}
+	\node[graphnode] (1) {1};
+	\node[graphnode] (2) [above right of=1] {2};
+	\node[graphnode] (3) [below right of=2] {3};
+	\node[graphnode] (4) [below right of=1] {4};
+	\node[graphnode] (5) [below=30pt of 4] {5};
+	\node[graphnode] (6) [below left of=5] {6};
+	\node[graphnode] (7) [below right of=5] {7};
+
+	\path[graphedge, color=colcontrast]
+		(2) edge (1)
+			edge (3)
+			edge (4)
+		(4) edge (1)
+			edge (3)
+	;
+
+	\path[graphedge, color=colcontrast2]
+		(5) edge (6)
+			edge (7)
+		(6) edge (7)
+	;
+
+	\path[graphedge, color=colcontrast, dash pattern=on 4pt off 4pt]
+		(4) edge (5)
+	;
+
+	\path[graphedge, color=colcontrast2, dash pattern=on 4pt off 4pt, dash phase=4pt]
+		(4) edge (5)
+	;
+
+	\path[graphedge, color=colcontrast, dotted]
+		(1) edge (3)
+		(5) edge (1)
+			edge[bend right=90,looseness=1.5] (2)
+			edge (3)
+	;
+
+	\path[graphedge, color=colcontrast2, dotted]
+		(4) edge (6)
+			edge (7)
+	;
+\end{tikzpicture}
+
