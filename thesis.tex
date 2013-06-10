@@ -68,6 +68,11 @@
 % list of symbols
 \usepackage[intoc]{nomencl}
 
+% algorithm
+\usepackage[
+	linesnumbered% draw line numbers
+]{algorithm2e}
+
 % TODO remove this!
 % debug packages
 \usepackage{blindtext}
@@ -123,6 +128,7 @@
 % math macros
 \newcommand{\set}[1]{\mathbb{#1}}
 \newcommand{\card}[1]{\left|#1\right|}
+\newcommand{\concat}{+\kern-0.8ex:}
 
 % calculation helper
 \newcommand{\mycalc}[2]{
@@ -139,6 +145,7 @@
 %---------------------------------------
 %---------LIST OF SYMBOLS---------------
 %---------------------------------------
+\nomenclature{$\concat$}{Append (Returns first operand with second operand appended)}
 \nomenclature{$D$}{Set of all dimenions}
 \nomenclature{$\card{D}$}{Total number of dimenions}
 \nomenclature{$N$}{Set of all objects}
