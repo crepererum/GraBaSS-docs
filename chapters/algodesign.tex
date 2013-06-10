@@ -1,4 +1,4 @@
-\chapter{Designing a high perfomance algorithm}
+\chapter{Designing a high perfomance algorithm}\label{chap:algodesign}
 To handle current and future big datasets a special approach is required. In this chapter, I will design a high perfomance algorithm that is able to handle this task. The main goal is a method that does not beat the comlexity of $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} + \card{D}^2 \cdot \card{N} )$. This complexity is a good upper bound. It combines the bounds of two different task. The first one is the preprocessing and structure detection of all objects in all dimensions. $\mathcal{O} ( \card{D} \cdot \card{N} )$ would be enough to normalize the data, but $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} )$ allowes some better methods like sorting. The second part is the detection of relations between all dimensions, which could be done in $\mathcal{O} ( \card{D}^2 )$. Because reducing the dimenions to a fixed set of features does honor a non fixed number of elements, a good method needs $\mathcal{O} ( \card{D}^2 \cdot \card{N} )$.
 
 \section{Optimize graph structure}
