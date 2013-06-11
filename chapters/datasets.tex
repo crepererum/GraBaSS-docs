@@ -14,7 +14,7 @@ I converted the audio to a sample rate of \SI{44100}{\hertz}. After it, I splitt
 	\label{fig:audio}
 \end{figure}
 
-The subspace analyzis performance well but gives boring results. Meanly the first and last bins of the spectrum forms one subsapce and the middle part describes another.
+The subspace analyzis performance well but gives boring results. Meanly the first and last bins of the spectrum forms one subsapce and the middle part describes another. For this kind of data, time wraping (\cite{timeWraping}) may be the better analyzing approach.
 
 \section{Drug Database}
 Another source of high dimensional data is the list of incredients of drugs. A given set of drugs described by a list of their incredients is processed as followed: Build a list of all incredients in all drugs and bring them into a fixed order. Every incredient forms one dimension. Then build a binary vector for every drug in the database where $1$ describes that a incredient is contained in the drug and $0$ if this is not the case.
