@@ -65,3 +65,89 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 
 To calculate the bidirectional joined filtered distance graph, I assume that the algorithm gets the distance $n \in \set{N}_+$ as a fixed, input size independet parameter. To graph will generated from the graph with the distance $n-1$ where a distance of $1$ is the input graph. Every of this rounds contains two steps. Step one is the calculation of the connection rates, which can be done in $\mathcal{O} ( \card{V}^2 )$. This assumes that data structures are used that can answert the question ``Is vertix $v_1$ connceted to $v_2$?'' in $\mathcal{O} ( 1 )$. The second calculation step is the construction of the new neighborhood for every node. Assuming that you use $\mathcal{O} ( 1 )$ set operations, this can be done for all vertices in $\mathcal{O} ( \card{V}^2 )$. This results in a total cost per round of $\mathcal{O} ( \card{V}^2 )$ and a total algorithm cost of $\mathcal{O} ( n \cdot \card{V}^2 ) = \mathcal{O} ( \card{V}^2 )$. Following the advice to choosing the distance parameter $n$ independet of input size, this graph transformation will approximatly not slow down the entire algorithm.
 
+\section{Algorithm Summary}
+\begin{algorithm}
+	\KwData{Dimension $d$}
+	\KwData{Binsize $s$}
+	\KwResult{Bins $B$}
+
+	\SetKwData{Undef}{undef}
+
+	\SetKwFunction{Sort}{sort}
+
+	\Begin{
+		$B$ $\leftarrow$ $()$\;
+		$d_s$ $\leftarrow$ \Sort{$d$}\;
+		$x$ $\leftarrow$ \Undef\;
+		$b$ $\leftarrow$ $()$\;
+		\For{$x \in d_s$}{
+			\If{$|B| \geq s \wedge x \neq l$}{
+				$B$ $\leftarrow$ $B \concat b$\;
+				$b$ $\leftarrow$ $()$\;
+			}
+			$b$ $\leftarrow$ $B \concat x$\;
+			$l$ $\leftarrow$ $x$\;
+		}
+		\If{$|b| \neq 0$}{
+			$B$ $\leftarrow$ $B \concat b$\;
+		}
+	}
+	\caption{buildBins}
+\end{algorithm}
+
+\begin{algorithm}
+	\KwData{Dataset $D$}
+	\KwData{Threshold $p_t$}
+	\KwData{Refine threshold $p_r$}
+	\KwResult{Subspaces $S$}
+
+	\SetKwFunction{BuildBins}{buildBins}
+	\SetKwFunction{CalcMeanValues}{calcMeanValues}
+	\SetKwFunction{CalcStddevValues}{calcStddevValues}
+	\SetKwFunction{CalcVarValues}{calcVarValues}
+	\SetKwFunction{CoVar}{coVar}
+	\SetKwFunction{DimSimilarity}{dimSimilarity}
+	\SetKwFunction{ExtendNeighbors}{extendNeighbors}
+	\SetKwFunction{SearchCliques}{searchCliques}
+
+	\Begin{
+		\tcc{Pre calculate aggregates}
+		$D_m$ $\leftarrow$ \CalcMeanValues{$D$}\;
+		$D_v$ $\leftarrow$ \CalcVarValues{$D$, $D_m$}\;
+		$D_s$ $\leftarrow$ \CalcStddevValues{$D_v$}\;
+
+		\BlankLine
+		\tcc{Build grid}
+		$D_g$ $\leftarrow$ $()$\;
+		\For{$d \in D$}{
+			$D_g$ $\leftarrow$ $D_g \concat$ \BuildBins{$d$, $\sqrt{|D|}$}\;
+		}
+
+		\BlankLine
+		\tcc{Build graph}
+		\For{$(d_1,m_1,s_1,g_1) \in (D,D_m,D_s,D_g)$}{
+			$n$ $\leftarrow$ $\{\}$\;
+			\For{$(d_2,m_2,s_2,g_2) \in (D,D_m,D_s,D_g)\setminus\{(d_1,m_1,s_1,g_1)\}$}{
+				$x_1$ $\leftarrow$ $\frac{\CoVar{$d_1$, $d_2$, $m_1$, $m_2$}}{s_1 \cdot s_2}$\;
+				$x_2$ $\leftarrow$ \DimSimilarity{$g_1$, $g_2$}\;
+				\If{$x_1 \cdot x_2 \geq p_t$}{
+					$n$ $\leftarrow$ $n \cup \{d_2\}$\;
+				}
+			}
+			$G$ $\leftarrow$ $G \concat n$\;
+		}
+
+		\BlankLine
+		\tcc{Refine graph}
+		$G_r$ $\leftarrow$ $()$\;
+		\For{$v \in G$}{
+			$G_r$ $\leftarrow$ $G_r \concat$ \ExtendNeighbors{$v$, $G$, $p_r$}\;
+		}
+
+		\BlankLine
+		\tcc{Search cliques (which are our subspaces)}
+		$S$ $\leftarrow$ \SearchCliques{$G_r$}\;
+	}
+	\caption{calcSubspaces}
+\end{algorithm}
+
