@@ -68,8 +68,12 @@
 % list of symbols
 \usepackage[intoc]{nomencl}
 
+% list of everything
+\usepackage{tocbibind}
+
 % algorithm
 \usepackage[
+	ruled,% nice lines above/beyond the algorithms
 	linesnumbered% draw line numbers
 ]{algorithm2e}
 
@@ -124,6 +128,9 @@
 % list of symbols
 \makenomenclature
 \renewcommand{\nomname}{List of Symbols}
+
+% list of algorithms
+\newcommand{\listofalgorithmes}{\tocfile{\listalgorithmcfname}{loa}}
 
 % math macros
 \newcommand{\set}[1]{\mathbb{#1}}
@@ -185,6 +192,8 @@
 \backmatter
 
 \listoffigures
+
+\listofalgorithmes
 
 \printnomenclature
 
