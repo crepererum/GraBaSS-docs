@@ -1,6 +1,17 @@
 \chapter{Designing a high perfomance algorithm}\label{chap:algodesign}
 To handle current and future big datasets a special approach is required. In this chapter, I will design a high perfomance algorithm that is able to handle this task. The main goal is a method that does not beat the comlexity of $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} + \card{D}^2 \cdot \card{N} )$. This complexity is a good upper bound. It combines the bounds of two different task. The first one is the preprocessing and structure detection of all objects in all dimensions. $\mathcal{O} ( \card{D} \cdot \card{N} )$ would be enough to normalize the data, but $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} )$ allowes some better methods like sorting. The second part is the detection of relations between all dimensions, which could be done in $\mathcal{O} ( \card{D}^2 )$. Because reducing the dimenions to a fixed set of features does honor a non fixed number of elements, a good method needs $\mathcal{O} ( \card{D}^2 \cdot \card{N} )$.
 
+\section{A question of similarity}
+To search and find subspaces and to use them for further analysis, it is necessary to describe, when dimenions should be share the same subspace. In words, a good but very common describtion is, that they should be similar. But this term has different meanings for different applications and in different fields of science. To use the results for analysis, it is important that you know which structures or attributes dimenions of the same subspace share. It does not make any sense to use a metric based on covariance for the subspace search algorithm, when your outlier detection uses an manhatten metric to detect high distance points. So, the similarity metric should be choosen wisely. To do so, it should defined:
+
+\begin{envdef}[Similarity]
+	A similary $s : D \times D \rightarrow [0,1]$ describes, how similar two dimensions are. $0$ means ``not similar'' and $1$ means ``very similar''. Their has to be an algorithm, two calculate the similary for two given dimenions and a fixed number of points.
+\end{envdef}
+
+The definition also includes the computability. Because this thesis is about high performance feature selection, the complexity of the algorithm is highly important.\footnote{Please notice, that big constant factors are also important if they are part of the algorithm. Constant factors should be small if possible.} I will no try to evaluate diffent approaches and try to categorize them.
+
+A well known similary is based on the Pearson correlation coefficient. It can be cutted to $[0,1]$, squared or the absolute value can be calcuated to get a similary. The correlation coefficient can be calculated in $\mathcal{O}(\card{N})$. For many applications, this type of similary is sufficient. Because it describes a linear relation, there is an underlying structure which has to exist. Because this structure only has two degrees of freedom, it is very baised.
+
 \section{From similarity to subspace}
 Based on the combined similarity it is possible to calculate subspaces. It is possible to calculate distances between all pairs of dimensions, because of the nature of subspaces. So it is important to find groups in this $\card{D}^2$ relations highly efficient.
 
@@ -14,7 +25,7 @@ A core problem of strict clique searchers is the heavy fragmentation if only one
 	Given a graph $G=(V,E)$ and a distance $n \in \set{N}_0$, the strict distance graph $G^n=(V,E^n)$ is give by:
 	\begin{align}
 		E^0 &= \left\{ (v,v) \in V^2 \right\}\\
-		E^i &= \left\{ (v_0,v_2) \in V^2 \mid \exists v_1 \in V : (v_0,v_1) \in E^{(i-1)}, (v_1,v_2) \in E \right\}, \quad \forall i>0
+		E^i &= \left\{ (v_0,v_2) \in V^2 \mid \exists v_1 \in V : (v_0,v_1) \in E^{i-1}, (v_1,v_2) \in E \right\}, \quad \forall i>0
 	\end{align}
 \end{envdef}
 \begin{figure}
@@ -154,7 +165,8 @@ To calculate the bidirectional joined filtered distance graph, I assume that the
 \begin{algorithm}
 	\KwData{Dataset $D$}
 	\KwData{Threshold $p_t$}
-	\KwData{Refine threshold $p_r$}
+	\KwData{Graph distance $p_d$}
+	\KwData{Threshold of the graph connection rate $p_c$}
 	\KwResult{Subspaces $S$}
 
 	\SetKwFunction{BuildBins}{buildBins}
@@ -195,7 +207,7 @@ To calculate the bidirectional joined filtered distance graph, I assume that the
 
 		\BlankLine
 		\tcc{Refine graph}
-		$G_r$ $\leftarrow$ \RefineGraph{$G$, $p_n$, $p_r$}\;
+		$G_r$ $\leftarrow$ \RefineGraph{$G$, $p_d$, $p_c$}\;
 
 		\BlankLine
 		\tcc{Search cliques (which are our subspaces)}
