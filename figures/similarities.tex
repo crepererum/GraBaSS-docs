@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+	\node[blocknode] (identity) {Identity};
+	\node[blocknode, right = 1 of identity.east] (pearson) {Pearson};
+	\node[blocknode, above right = 1 and 1 of identity.east] (pnorm) {$p$-norm};
+	\node[blocknode, below right = 1 and 3 of identity.east] (ml) {Machine Learning};
+	\node[blocknode, right = 8 of identity.east] (independence) {Independence};
+
+	\draw[->] (identity.east) -- (pearson.west);
+	\draw[->] (identity.east) -- (pnorm.west);
+	\draw[->] (identity.east) -- (ml.west);
+	\draw[->] (pearson.east) -- (independence.west);
+	\draw[->] (pnorm.east) -- (independence.west);
+	\draw[->] (ml.east) -- (independence.west);
+\end{tikzpicture}
+

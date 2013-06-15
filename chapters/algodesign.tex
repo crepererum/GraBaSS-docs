@@ -5,12 +5,57 @@ To handle current and future big datasets a special approach is required. In thi
 To search and find subspaces and to use them for further analysis, it is necessary to describe, when dimenions should be share the same subspace. In words, a good but very common describtion is, that they should be similar. But this term has different meanings for different applications and in different fields of science. To use the results for analysis, it is important that you know which structures or attributes dimenions of the same subspace share. It does not make any sense to use a metric based on covariance for the subspace search algorithm, when your outlier detection uses an manhatten metric to detect high distance points. So, the similarity metric should be choosen wisely. To do so, it should defined:
 
 \begin{envdef}[Similarity]
-	A similary $s : D \times D \rightarrow [0,1]$ describes, how similar two dimensions are. $0$ means ``not similar'' and $1$ means ``very similar''. Their has to be an algorithm, two calculate the similary for two given dimenions and a fixed number of points.
+	A similary $s : D \times D \rightarrow [0,1]$ describes, how similar two dimensions are. $0$ means ``not similar'' and $1$ means ``very similar''. It must satisfy the following attributes:
+	\begin{enumerate}
+		\item Computability: Their has to be an algorithm, two calculate the similary for two given dimenions and a fixed number of points.
+		\item Symmetry: For all dimentions $a,b \in D$ it holds that $s(a,b) = s(b,a)$.
+		\item Identity: For all dimentions $a \in D$ it holds that $s(a,a) = 1$.
+	\end{enumerate}
 \end{envdef}
 
 The definition also includes the computability. Because this thesis is about high performance feature selection, the complexity of the algorithm is highly important.\footnote{Please notice, that big constant factors are also important if they are part of the algorithm. Constant factors should be small if possible.} I will no try to evaluate diffent approaches and try to categorize them.
 
 A well known similary is based on the Pearson correlation coefficient. It can be cutted to $[0,1]$, squared or the absolute value can be calcuated to get a similary. The correlation coefficient can be calculated in $\mathcal{O}(\card{N})$. For many applications, this type of similary is sufficient. Because it describes a linear relation, there is an underlying structure which has to exist. Because this structure only has two degrees of freedom, it is very baised.
+
+To handle complex data, a less baised similary has to be constructed. One way to do it is to utilizy metrics:
+
+\begin{envtheo}
+	Given a limited metric $m : D \times D \rightarrow [0,\infty)$, $l := \sup_{a,b \in D \times D} m(a,b) < \infty$ a similarity can be constructed in the following way:
+	\begin{equation}
+		s(a,b) = 1 - \frac{m(a,b)}{l}
+	\end{equation}
+\end{envtheo}
+
+When the dimenions of the input set are limited, all $p$-norms can be used to construct a similarity by calculating the distance of all points in the dataset:
+
+\begin{envtheo}
+	Given a $p$-norm $\|\cdot\|_p$, a similary can be constructed by using the normalized sum of all distances:
+	\begin{equation}
+		s(a,b) = 1 - \frac{\|\pi_a(N) - \pi_b(N)\|_p}{\card{N}}
+	\end{equation}
+\end{envtheo}
+
+$p$-norm can be calculated very efficient but are more baised than the Pearson correlation coefficient, because they are only high if two dimenions are nearly equal in many dimenions.\footnote{The number of this dimenions depends on the choosen $p$} So they are also baised and not usable for many applications.
+
+Another approach to create new similarities is to utilizy a metric together with a machine learning algorithm. This should be less baised because many machine learning algorithms can produce very unbaised results:
+
+\begin{envtheo}
+	Given a two dimenions $a,b \in D$, a set of prediction algorithms $P = \{ p : \set{R} \rightarrow \set{R} \}$ and a machine learning algorithm $l : (\set{R} \rightarrow \set{R}) \rightarrow P$, a similary can be formed by choosing two subsets $T,V \subseteq N$, $T \cup V = N$, train the preciction algorithm and validating the results by messuring the difference:
+	\begin{align}
+		p_1 &= l( \pi_a(T), \pi_b(T) )\\
+		p_2 &= l( \pi_b(T), \pi_a(T) )\\
+		s_1 &= 1 - \frac{\|\pi_b(V) - p_1(\pi_a(N))\|}{\card{V}}\\
+		s_2 &= 1 - \frac{\|\pi_a(V) - p_2(\pi_b(N))\|}{\card{V}}\\
+		s(a,b) &= s_1 \cdot s_2
+	\end{align}
+\end{envtheo}
+
+Please choose the training and validation set wisely, especially when you expect outliers in the dataset.
+
+\begin{figure}
+	\input{figures/similarities.tex}
+	\caption{Diffrent similarities}
+\end{figure}
 
 \section{From similarity to subspace}
 Based on the combined similarity it is possible to calculate subspaces. It is possible to calculate distances between all pairs of dimensions, because of the nature of subspaces. So it is important to find groups in this $\card{D}^2$ relations highly efficient.
@@ -79,7 +124,7 @@ The filtered joined distance graph is not bidirectional. This leads the problem 
 		\tilde{E}_\alpha^{\overline{n}} = \left\{ (v_1,v_2) \in V^2 \mid (v_1,v_2),(v_2,v_1) \in E_\alpha^{\overline{n}} \right\}
 	\end{equation}
 \end{envdef}
-As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter semiclique edges to join them to cliques without creating senseless connections or resulting in informaion loosage.
+As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter semiclique edges to join them to cliques without creating senseless connections or resulting in informaion loosage. It is important that the graph refinement does not slow down the entire process on big data. In other words, it must not have a higher complexity class. Because the distance parameter $n$ is only used for graph fixing and should not depend on the input size, the following theorem can be shown:
 
 \begin{algorithm}
 	\KwData{Vertex $v$}
@@ -130,7 +175,12 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 	\caption{refineGraph}
 \end{algorithm}
 
-To calculate the bidirectional joined filtered distance graph, I assume that the algorithm gets the distance $n \in \set{N}_+$ as a fixed, input size independet parameter. To graph will generated from the graph with the distance $n-1$ where a distance of $1$ is the input graph. Every of this rounds contains two steps. Step one is the calculation of the connection rates, which can be done in $\mathcal{O} ( \card{V}^2 )$. This assumes that data structures are used that can answert the question ``Is vertix $v_1$ connceted to $v_2$?'' in $\mathcal{O} ( 1 )$. The second calculation step is the construction of the new neighborhood for every node. Assuming that you use $\mathcal{O} ( 1 )$ set operations, this can be done for all vertices in $\mathcal{O} ( \card{V}^2 )$. This results in a total cost per round of $\mathcal{O} ( \card{V}^2 )$ and a total algorithm cost of $\mathcal{O} ( n \cdot \card{V}^2 ) = \mathcal{O} ( \card{V}^2 )$. Following the advice to choosing the distance parameter $n$ independet of input size, this graph transformation will approximatly not slow down the entire algorithm.
+\begin{envtheo}
+	The graph refinement can be done in $\mathcal{O} ( \card{V}^2 )$ when choosing a fixed distance parameter $n \in \set{N}_+$.
+\end{envtheo}
+\begin{proof}
+	To graph will generated from the graph with the distance $n-1$ where a distance of $1$ is the input graph. Every of this rounds contains two steps. Step one is the calculation of the connection rates, which can be done in $\mathcal{O} ( \card{V}^2 )$. This assumes that data structures are used that can answert the question ``Is vertix $v_1$ connceted to $v_2$?'' in $\mathcal{O} ( 1 )$. The second calculation step is the construction of the new neighborhood for every node. Assuming that you use $\mathcal{O} ( 1 )$ set operations, this can be done for all vertices in $\mathcal{O} ( \card{V}^2 )$. This results in a total cost per round of $\mathcal{O} ( \card{V}^2 )$ and a total algorithm cost of $\mathcal{O} ( n \cdot \card{V}^2 ) = \mathcal{O} ( \card{V}^2 )$.
+\end{proof}
 
 \section{Algorithm Summary}
 \begin{algorithm}

@@ -114,7 +114,8 @@
 	>=stealth',
 	axis/.style={->, very thick, >=stealth'},
 	graphedge/.style={ultra thick},
-	graphnode/.style={circle, draw}
+	graphnode/.style={circle, draw},
+	blocknode/.style={draw, minimum width=4em}
 }
 \newcommand*\circled[1]{\tikz[baseline={($(char.south) + (0,0.5pt)$)}]{
 	\node[shape=circle,draw,inner sep=0.5pt,font=\tiny,thick] (char) {\textsf{#1}};}}
@@ -146,6 +147,8 @@
 }
 
 % theorems, defs, ...
+\theoremstyle{plain}
+\newtheorem{envtheo}{Theorem}
 \theoremstyle{definition}
 \newtheorem{envdef}{Definition}
 
@@ -157,6 +160,7 @@
 \nomenclature{$\card{D}$}{Total number of dimenions}
 \nomenclature{$N$}{Set of all objects}
 \nomenclature{$\card{N}$}{Total number of objects}
+\nomenclature{$\pi_d(x)$}{Projection of point $x \in N$ to dimenion $d \in D$}
 
 
 %---------------------------------------
