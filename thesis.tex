@@ -87,7 +87,7 @@
 %---------------------------------------
 
 % general informaion
-\title{Some funny words}
+\title{GraBaSS: Graph Based Subspace Search}
 \author{Marco Neumann}
 
 % color
@@ -102,6 +102,10 @@
 	linkcolor=black,% black inter document links
 	urlcolor=black,% black urls
 	citecolor=black,% black cite
+	pdftitle={GraBaSS: Graph Based Subspace Search},% document title (metadata)
+	pdfsubject={An efficient way to find subspaces in high dimensional data sets},% document subject (metadata)
+	pdfauthor={Marco Neumann},% document author (metadata)
+	pdfkeywords={feature selection, graph, subspace},% document keywords (metadata)
 	final% also work in draft mode, TODO remove this!
 }
 
@@ -187,6 +191,7 @@
 \tableofcontents
 
 \mainmatter
+\input{chapters/introduction.tex}
 \input{chapters/algodesign.tex}
 \input{chapters/implementation.tex}
 \input{chapters/beat.tex}
