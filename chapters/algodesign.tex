@@ -52,6 +52,23 @@ Another approach to create new similarities is to utilizy a metric together with
 
 Please choose the training and validation set wisely, especially when you expect outliers in the dataset.
 
+Since machine learning algorithms allow compartion of dimensions with flexible structure, a important question is how flexible a structure can be to allow a comparation. Mathematics had found a answer to this question long time ago. They defined the term and rules of indepedence:
+
+\begin{envdef}[Independence]
+	Two dimensions $X,Y \in D$ are independent, iff:
+	\begin{equation}
+		\prob{X=z,Y=z} = \prob{X=z}\prob{Y=z},\quad \forall z \in \set{R}
+	\end{equation}
+\end{envdef}
+
+This definition is used by many mathmatics worldwide but has one problem. If we assume a limited dataset with real number values and just a little bit random noise, no value in the dimenions will appair twice. According to the definition of indepedence, all dimensions will be indepent in this situation. So it is necessary to extend the dirac masses to another probability. This can be done by using window functions, which leads to an continous probability. Another method is binning by using fixed size bins. Because it is possible that the data resolution is different in different parts of the dimension, guessing window sizes or bin widths is not possible everytime and can lead to wrong results. To circumvent this problem, I will introduce a method that is known widely but not used by many researcher and analysts: binning with fixed number of objects per bin. To express the effect of this method, I will call it rewraping.
+
+Rewraping handles dense data regions very well and ignores non used regions. Figure~\ref{fig:rewraping} illustrates this process. The number of bins is not a user provided parameter. It is set to $\sqrt{\card{N}}$ so that every grid cell should contain $1$ object if the dimensions are indepent.
+
+Because real value data can contain discrete values, a small modification is required. Bins are created from the lower to the upper bound of the dataset. If the border between a created and a new bin will split a set of equal values, the entire set will assigned to the lower bin. This can lead to a different bin number and fill size. See algorithm~\ref{alg:binning} for a complete definition.
+
+To convert the indepedence in a similary, the absolute difference in all cells from the optimum is counted and normalized. This requires to calculate the optimum or, in other words, the most depended constellation of objects for a given grid. This can be done be using a simple greedy method. Search for the bins with the highest object count in each dimension. Now, set the matching cell to the mininum of both values and reduce the object count of both bins by this number. Repeat this step until all objects have been placed. All non touched cells are assumed as empty.
+
 \begin{figure}
 	\input{figures/similarities.tex}
 	\caption{Diffrent similarities}
