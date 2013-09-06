@@ -52,7 +52,7 @@ Another approach to create new similarities is to utilizy a metric together with
 
 Please choose the training and validation set wisely, especially when you expect outliers in the dataset.
 
-Since machine learning algorithms allow compartion of dimensions with flexible structure, a important question is how flexible a structure can be to allow a comparation. Mathematics had found a answer to this question long time ago. They defined the term and rules of indepedence:
+Since machine learning algorithms allow comparison of dimensions with flexible structure, a important question is how flexible a structure can be to allow a comparison. Mathematics had found a answer to this question long time ago. They defined the term and rules of independence:
 
 \begin{envdef}[Independence]
 	Two dimensions $X,Y \in D$ are independent, iff:
@@ -61,25 +61,94 @@ Since machine learning algorithms allow compartion of dimensions with flexible s
 	\end{equation}
 \end{envdef}
 
-This definition is used by many mathmatics worldwide but has one problem. If we assume a limited dataset with real number values and just a little bit random noise, no value in the dimenions will appair twice. According to the definition of indepedence, all dimensions will be indepent in this situation. So it is necessary to extend the dirac masses to another probability. This can be done by using window functions, which leads to an continous probability. Another method is binning by using fixed size bins. Because it is possible that the data resolution is different in different parts of the dimension, guessing window sizes or bin widths is not possible everytime and can lead to wrong results. To circumvent this problem, I will introduce a method that is known widely but not used by many researcher and analysts: binning with fixed number of objects per bin. To express the effect of this method, I will call it rewraping.
+This definition is used by many mathematics worldwide but has one problem. If we assume a limited dataset with real number values and just a little bit random noise, no value in the dimensions will appear twice. According to the definition of independence, all dimensions will be independent in this situation. So it is necessary to extend the Dirac masses to another probability. This can be done by using window functions, which leads to an continuous probability. Another method is binning by using fixed size bins. Because it is possible that the data resolution is different in different parts of the dimension, guessing window sizes or bin widths is not possible every time and can lead to wrong results. To circumvent this problem, I will introduce a method that is known widely but not used by many researcher and analysts: binning with fixed number of objects per bin. To express the effect of this method, I will call it rewrapping.
 
-Rewraping handles dense data regions very well and ignores non used regions. Figure~\ref{fig:rewraping} illustrates this process. The number of bins is not a user provided parameter. It is set to $\sqrt{\card{N}}$ so that every grid cell should contain $1$ object if the dimensions are indepent.
+Rewrapping handles dense data regions very well and ignores non used regions. Figure~\ref{fig:rewraping} illustrates this process. The number of bins is not a user provided parameter. It is set to $\sqrt{\card{N}}$ so that every grid cell should contain $1$ object if the dimensions are independent.
 
-Because real value data can contain discrete values, a small modification is required. Bins are created from the lower to the upper bound of the dataset. If the border between a created and a new bin will split a set of equal values, the entire set will assigned to the lower bin. This can lead to a different bin number and fill size. See algorithm~\ref{alg:binning} for a complete definition.
+Because real value data can contain discrete values, a small modification is required. Bins are created from the lower to the upper bound of the dataset. If the border between a created and a new bin will split a set of equal values, the entire set will assigned to the lower bin. This can lead to a different bin number and fill size. See algorithm~\ref{alg:buildBins} for a complete definition.
 
-To convert the indepedence in a similary, the absolute difference in all cells from the optimum is counted and normalized. This requires to calculate the optimum or, in other words, the most depended constellation of objects for a given grid. This can be done be using a simple greedy method. Search for the bins with the highest object count in each dimension. Now, set the matching cell to the mininum of both values and reduce the object count of both bins by this number. Repeat this step until all objects have been placed. All non touched cells are assumed as empty.
+\begin{algorithm}
+	\KwData{Dimension $d$}
+	\KwData{Binsize $s$}
+	\KwResult{Bins $B$}
+
+	\SetKwData{Undef}{undef}
+
+	\SetKwFunction{Sort}{sort}
+
+	\Begin{
+		$B$ $\leftarrow$ $()$\;
+		$d_s$ $\leftarrow$ \Sort{$d$}\;
+		$x$ $\leftarrow$ \Undef\;
+		$b$ $\leftarrow$ $()$\;
+		\For{$x \in d_s$}{
+			\If{$|B| \geq s \wedge x \neq l$}{
+				$B$ $\leftarrow$ $B \concat b$\;
+				$b$ $\leftarrow$ $()$\;
+			}
+			$b$ $\leftarrow$ $B \concat x$\;
+			$l$ $\leftarrow$ $x$\;
+		}
+		\If{$|b| \neq 0$}{
+			$B$ $\leftarrow$ $B \concat b$\;
+		}
+	}
+	\caption{buildBins}
+	\label{alg:buildBins}
+\end{algorithm}
+
+To extract a measure of independence from the discrete data set, the mutual information is calculated:
+
+\begin{envdef}[Mutual Information]
+	For two discrete dimensions $X$ and $Y$, which are only described by their bins and the probability of each bin, the mutual information $\mutual{X}{Y}$ is calculated by:
+	\begin{equation}
+		\mutual{X}{Y} = \entropy{X} + \entropy{y} - \entropy{X,Y}
+	\end{equation}
+	To do this, the entropy has to be calculated as followed:
+	\begin{align}
+		\entropy{X} &= - \sum_{x \in X} p(x) \log{p(x)}\\
+		\entropy{X,Y} &= - \sum_{x \in X, y \in Y} p(x,y) \log{p(x,y)}
+	\end{align}
+\end{envdef}
+
+To convert the value of mutual information to a similarity, it has to be normalized. To do so, the following term is used:
+
+\begin{envdef}[Normalized Mutual Information]
+	The normalized mutual information of two dimension $X$ and $Y$ is calculated by the following equation
+	\begin{equation}
+		\mutual{x}{y}_{norm} = \frac{\mutual{X}{Y}}{\min{\left( \entropy{X}, \entropy{Y} \right)}}
+	\end{equation}
+\end{envdef}
+
+Mutual information and independence do not respect permutation of the bins. This can lead to very unintuitive results and makes the calculation heavily depend on the number of bins and their borders. To fix this, the information from the absolute Pearson correlation coefficient should be mixed in. This describes if two dimensions are linear correlated and avoids random permutations. The two similarities should be combined in a way that acts like a logic AND. Because booth values are real, but have the same range, a limited, non-complete logic can be used:
+
+\begin{envdef}[Similarity logic]
+	Similarities can be used as logical values in the following way:
+	\begin{align}
+		true &\equiv 1\\
+		false &\equiv 0\\
+		\neg a &\equiv 1 - a\\
+		a \wedge b &\equiv a \cdot b\\
+		a \vee b &\equiv 1 - (1 - a) \cdot (1 - b)
+	\end{align}
+\end{envdef}
+
+Please note, that this system is not correct in terms of logic, because $a \wedge a = a$, but $a \wedge a \equiv a^2 \neq a$. This fact does not make this system wrong, because it makes sense that the claim of $a \wedge a$ requires $a$ to be stronger than simple claim $a$ alone.
+
+It is now possible to combine different similarities to one final value. As described above, the mutual information is combined with the absolute Pearson correlation coefficient using the AND function or, in other words, a simple multiplication. Figure~\ref{fig:similarities} gives an overview about the different similarities and how they work together. There are also stronger and weaker definitions in terms of how the rely on a predefined structure. For example the absolute Pearson correlation coefficient only works well with linear correlation but avoids random permutations, whereas the normalized mutual information is more flexible but ignores permutations. Using this building blocks, it is possible to swap the final similarity when doing further research or combine it with new definitions.
 
 \begin{figure}
 	\input{figures/similarities.tex}
-	\caption{Diffrent similarities}
+	\caption{Different similarities}
+	\label{fig:similarities}
 \end{figure}
 
 \section{From similarity to subspace}
 Based on the combined similarity it is possible to calculate subspaces. It is possible to calculate distances between all pairs of dimensions, because of the nature of subspaces. So it is important to find groups in this $\card{D}^2$ relations highly efficient.
 
-Next, I want to discuss how subspaces are formed. Two dimenions should be contained in the subspaces, when they are similar. This can be expressed by a threshold $p_t \in [0,1]$, which the combined similarity should have. By stripping down the similarity matrix to a binary matrix, the dimenions form a graph. This speeds up the calculation, because it allows fast set operations and memory effective management. Because the most data sets have very different dimensions, the number of edges should be low.
+Next, I want to discuss how subspaces are formed. Two dimensions should be contained in the subspaces, when they are similar. This can be expressed by a threshold $p_t \in [0,1]$, which the combined similarity should have. By stripping down the similarity matrix to a binary matrix, the dimensions form a graph. This speeds up the calculation, because it allows fast set operations and memory effective management. Because the most data sets have very different dimensions, the number of edges should be low.
 
-Another important attribute of subspaces is that all contained dimenions are similar to each other. This attribute is already described as clique. Because the graph is dense it has a low degeneracy $d \in \set{N}_0$. So, the cliques can be calucated in $\mathcal{O}(d \cdot (\card{D} - d) \cdot 3^{\frac{d}{3}})$ by using \cite{listingCliques}. Because the cliques forms the subspaces, this is the complete algorithm for converting the combined similarity to subspaces.
+Another important attribute of subspaces is that all contained dimensions are similar to each other. This attribute is already described as clique. Because the graph is dense it has a low degeneracy $d \in \set{N}_0$. So, the cliques can be calculated in $\mathcal{O}(d \cdot (\card{D} - d) \cdot 3^{\frac{d}{3}})$ by using \cite{listingCliques}. Because the cliques forms the subspaces, this is the complete algorithm for converting the combined similarity to subspaces.
 
 \section{Optimize graph structure}
 A core problem of strict clique searchers is the heavy fragmentation if only one edge missing. Figure~\ref{subfig:opt_graph1} shows an example where the nodes semi clique $\left\{1,2,3,4\right\}$ is splitted into two cliques because of the absence of the edge $(1,3)$. For some applications it could be helpful to add this edge to the graph and join the two cliques into one. The first method to do it is the utilyzation a distance graph:
@@ -200,35 +269,6 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 \end{proof}
 
 \section{Algorithm Summary}
-\begin{algorithm}
-	\KwData{Dimension $d$}
-	\KwData{Binsize $s$}
-	\KwResult{Bins $B$}
-
-	\SetKwData{Undef}{undef}
-
-	\SetKwFunction{Sort}{sort}
-
-	\Begin{
-		$B$ $\leftarrow$ $()$\;
-		$d_s$ $\leftarrow$ \Sort{$d$}\;
-		$x$ $\leftarrow$ \Undef\;
-		$b$ $\leftarrow$ $()$\;
-		\For{$x \in d_s$}{
-			\If{$|B| \geq s \wedge x \neq l$}{
-				$B$ $\leftarrow$ $B \concat b$\;
-				$b$ $\leftarrow$ $()$\;
-			}
-			$b$ $\leftarrow$ $B \concat x$\;
-			$l$ $\leftarrow$ $x$\;
-		}
-		\If{$|b| \neq 0$}{
-			$B$ $\leftarrow$ $B \concat b$\;
-		}
-	}
-	\caption{buildBins}
-\end{algorithm}
-
 \begin{algorithm}
 	\KwData{Dataset $D$}
 	\KwData{Threshold $p_t$}
