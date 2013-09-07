@@ -1,0 +1,18 @@
+\begin{tikzpicture}
+	\begin{scope}[scale=4.5]
+		\draw[style=help lines, xstep=0.2, ystep=0.2] (0,0) grid(1,1);
+
+		\foreach \x in {0.0,0.2,...,1.0} {
+			\node at (\x,0) [below, rotate=45, anchor=east, yshift=-4pt]{\num[round-precision=1,round-mode=places]{\x}};
+		}
+		\foreach \y in {0.0,0.2,...,1.0} {
+			\node at (0,\y) [left]{\num[round-precision=1,round-mode=places]{\y}};
+		}
+
+		\draw[colcontrast2] plot[dot] file{data/rewrap2_target.dat};
+
+		\draw[axis] (0,0) -- (1,0) node[right]{dim 3};
+		\draw[axis] (0,0) -- (0,1) node[above]{dim 4};
+	\end{scope}
+\end{tikzpicture}
+

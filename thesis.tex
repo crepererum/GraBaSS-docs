@@ -125,7 +125,8 @@
 	axis/.style={->, very thick, >=stealth'},
 	graphedge/.style={ultra thick},
 	graphnode/.style={circle, draw},
-	blocknode/.style={draw, minimum width=4em}
+	blocknode/.style={draw, minimum width=4em},
+	dot/.style={mark=*, mark size=0.02em, only marks}
 }
 \newcommand*\circled[1]{\tikz[baseline={($(char.south) + (0,0.5pt)$)}]{
 	\node[shape=circle,draw,inner sep=0.5pt,font=\tiny,thick] (char) {\textsf{#1}};}}

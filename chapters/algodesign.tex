@@ -63,7 +63,24 @@ Since machine learning algorithms allow comparison of dimensions with flexible s
 
 This definition is used by many mathematics worldwide but has one problem. If we assume a limited dataset with real number values and just a little bit random noise, no value in the dimensions will appear twice. According to the definition of independence, all dimensions will be independent in this situation. So it is necessary to extend the Dirac masses to another probability. This can be done by using window functions, which leads to an continuous probability. Another method is binning by using fixed size bins. Because it is possible that the data resolution is different in different parts of the dimension, guessing window sizes or bin widths is not possible every time and can lead to wrong results. To circumvent this problem, I will introduce a method that is known widely but not used by many researcher and analysts: binning with fixed number of objects per bin. To express the effect of this method, I will call it rewrapping.
 
-Rewrapping handles dense data regions very well and ignores non used regions. Figure~\ref{fig:rewraping} illustrates this process. The number of bins is not a user provided parameter. It is set to $\sqrt{\card{N}}$ so that every grid cell should contain $1$ object if the dimensions are independent.
+Rewrapping handles dense data regions very well and ignores non used regions. Figure~\ref{fig:rewrap} illustrates this process. The number of bins is not a user provided parameter. It is set to $\sqrt{\card{N}}$ so that every grid cell should contain $1$ object if the dimensions are independent.
+
+\begin{figure}
+	\caption{Rewrapping}
+	\label{fig:rewrap}
+	\centering
+	\subfloat[\label{subfig:rewrap1_source}Sample 1: Input data]{\input{figures/rewrap1_source.tex}}
+	\hfill
+	\subfloat[\label{subfig:rewrap1_target}Sample 1: Result of rewrap]{\input{figures/rewrap1_target.tex}}
+	\\
+	\subfloat[\label{subfig:rewrap2_source}Sample 2: Input data]{\input{figures/rewrap2_source.tex}}
+	\hfill
+	\subfloat[\label{subfig:rewrap2_target}Sample 2: Result of rewrap]{\input{figures/rewrap2_target.tex}}
+	\\
+	\subfloat[\label{subfig:rewrap3_source}Sample 3: Input data]{\input{figures/rewrap3_source.tex}}
+	\hfill
+	\subfloat[\label{subfig:rewrap3_target}Sample 3: Result of rewrap]{\input{figures/rewrap3_target.tex}}
+\end{figure}
 
 Because real value data can contain discrete values, a small modification is required. Bins are created from the lower to the upper bound of the dataset. If the border between a created and a new bin will split a set of equal values, the entire set will assigned to the lower bin. This can lead to a different bin number and fill size. See algorithm~\ref{alg:buildBins} for a complete definition.
 
