@@ -286,6 +286,8 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 \end{proof}
 
 \section{Algorithm Summary}
+After discussing all parts of the algorithm, I will now wrap up the entire workflow and explain some optimizations. The main method is shown in algorithm~\ref{alg:calcSubspaces}. It uses the methods explained earlier. Please note that no method uses a global shared state. This functional attribute helps when it comes to parallelization of the algorithm.
+
 \begin{algorithm}
 	\KwData{Dataset $D$}
 	\KwData{Threshold $p_t$}
@@ -338,7 +340,18 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 		$S$ $\leftarrow$ \SearchCliques{$G_r$}\;
 	}
 	\caption{calcSubspaces}
+	\label{alg:calcSubspaces}
 \end{algorithm}
+
+First of all, some values that only depend on one dimension are precalculated, this are the mean, the variance and the standard deviation of the dimensions. This step can parallelized at two points. Because the result for one dimension only depends on this dimension itself, the values for multiple dimensions can be calculated independently. The mean and the variance are sums. This sum up can be parallelized can by multiple methods, because all sub sums are independent.
+
+After this, the discrete bins are created. Because bins are only build on top of the information of one dimension, multiple dimensions can handled in parallel too. The creation of the bins requires that the data is sorted by the actual dimension. This sorting can also be done by a parallel algorithm, e.g. merge sort.
+
+Now, the initial graph is build. This is done by calculating the absolute Pearson covariance coefficient and the normalized mutual information. Then, the product is calculated and an graph edge between this two dimensions is created, if this value is at least $t_e$. I suggest to parallelize the inner loop and leaf the outer one as it is. Depending on the size of the data set, this minimizes the number of page-in and page-out operations.\footnote{Don not hope, that an entire dimension can be hold by the cache, so cache locality is not an argument.} Because the Pearson covariance coefficient and the value of mutual information are symmetric, it is only required to calculated the one half of the adjacency matrix.
+
+Before calculating the cliques, the graph is refined by adding new edges. The performance trick by using the symmetry of the adjacency matrix works here too and the loops can be parallelized in the same way as done in the graph generation process.
+
+Finally, the cliques are searched by \cite{listingCliques}. Because the algorithm has multiple loops with independent recursions in them, it can be parallelized at this points.
 
 \section{Choosing parameters}
 Choosing the right parameters is important to get usable results. This choice also depends on the problem you want to solve or the information you want to extract from the data. The usage of the data by automatic analysis methods targets high information volume and low error rates. Manual, human driven analysis and exploration requires short, readable and non-redundant reports. In this case, a higher error rate is accepted to simplify this task. The GraBaSS has \num{3} parameters, $t_e$, $t_n$ and $d$ which should be used as followed.
