@@ -21,6 +21,7 @@
 
 # build results
 *.pdf
+svg/*
 
 # tmp files
 *.swp
