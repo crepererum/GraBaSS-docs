@@ -227,7 +227,7 @@ The filtered joined distance graph is not bidirectional. This leads the problem 
 		\tilde{E}_\alpha^{\overline{n}} = \left\{ (v_1,v_2) \in V^2 \mid (v_1,v_2),(v_2,v_1) \in E_\alpha^{\overline{n}} \right\}
 	\end{equation}
 \end{envdef}
-As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter semiclique edges to join them to cliques without creating senseless connections or resulting in informaion loosage. It is important that the graph refinement does not slow down the entire process on big data. In other words, it must not have a higher complexity class. Because the distance parameter $n$ is only used for graph fixing and should not depend on the input size, the following theorem can be shown:
+As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter semiclique edges to join them to cliques without creating senseless connections or resulting in information loosage. It is important that the graph refinement does not slow down the entire process on big data. In other words, it must not have a higher complexity class. Because the distance parameter $n$ is only used for graph fixing and should not depend on the input size, the following theorem can be shown:
 
 \begin{algorithm}
 	\KwData{Vertex $v$}
@@ -279,11 +279,15 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 \end{algorithm}
 
 \begin{envtheo}
-	The graph refinement can be done in $\mathcal{O} ( \card{V}^2 )$ when choosing a fixed distance parameter $n \in \set{N}_+$.
+	The graph refinement can be done in $\mathcal{O} ( n \cdot \card{V} \cdot m^2 )$ where $n \in \set{N}_+$ is the fixed distance parameter and $m \in \set{N}_0$ is the number of maximum neighbors over all vertexes in the resulting graph.
 \end{envtheo}
 \begin{proof}
-	To graph will generated from the graph with the distance $n-1$ where a distance of $1$ is the input graph. Every of this rounds contains two steps. Step one is the calculation of the connection rates, which can be done in $\mathcal{O} ( \card{V}^2 )$. This assumes that data structures are used that can answert the question ``Is vertix $v_1$ connceted to $v_2$?'' in $\mathcal{O} ( 1 )$. The second calculation step is the construction of the new neighborhood for every node. Assuming that you use $\mathcal{O} ( 1 )$ set operations, this can be done for all vertices in $\mathcal{O} ( \card{V}^2 )$. This results in a total cost per round of $\mathcal{O} ( \card{V}^2 )$ and a total algorithm cost of $\mathcal{O} ( n \cdot \card{V}^2 ) = \mathcal{O} ( \card{V}^2 )$.
+	In this proof, I assume that the neighbors for of each vertex are stored in a set, which allows lookup and insert operations in $\mathcal{O} (1)$.
+
+	The graph will generated from the graph with the distance $n-1$ where a distance of $1$ is the input graph. Every of this rounds contains three steps and is done for every vertex in the graph. The first step is the listing of all neighbor candidates without taking connection rates into account and joining them into one set. For each vertex, this takes $\mathcal{O} ( m^2 )$ operations and results in $\mathcal{O} ( m )$ candidates. Step two is the calculation of the connectivity, which can be done in $\mathcal{O} ( m )$ for every candidate. For all candidates, it takes $\mathcal{O} ( m^2 )$ operations. The last step is the filtering according to the connectivity and the build-up of the new neighborhood-set, which takes $\mathcal{O} ( m )$ operations. All steps together take $\mathcal{O} ( m^2 )$ operations for each vertex, which is $\mathcal{O} ( \card{V} \cdot m^2)$ in total. Because this process is repeated $n$ times, the total complexity is $\mathcal{O} ( n \cdot \card{V} \cdot m^2 )$.
 \end{proof}
+
+Assuming, that the number of maximum neighbors is small and especially lower than $\card{D}$, the graph fixing process does not have a performance impact. Tests prove this assumption, see section~\ref{sec:time} for details.
 
 \section{Algorithm Summary}
 After discussing all parts of the algorithm, I will now wrap up the entire workflow and explain some optimizations. The main method is shown in algorithm~\ref{alg:calcSubspaces}. It uses the methods explained earlier. Please note that no method uses a global shared state. This functional attribute helps when it comes to parallelization of the algorithm.
@@ -347,7 +351,7 @@ First of all, some values that only depend on one dimension are precalculated, t
 
 After this, the discrete bins are created. Because bins are only build on top of the information of one dimension, multiple dimensions can handled in parallel too. The creation of the bins requires that the data is sorted by the actual dimension. This sorting can also be done by a parallel algorithm, e.g. merge sort.
 
-Now, the initial graph is build. This is done by calculating the absolute Pearson covariance coefficient and the normalized mutual information. Then, the product is calculated and an graph edge between this two dimensions is created, if this value is at least $t_e$. I suggest to parallelize the inner loop and leaf the outer one as it is. Depending on the size of the data set, this minimizes the number of page-in and page-out operations.\footnote{Don not hope, that an entire dimension can be hold by the cache, so cache locality is not an argument.} Because the Pearson covariance coefficient and the value of mutual information are symmetric, it is only required to calculated the one half of the adjacency matrix.
+Now, the initial graph is build. This is done by calculating the absolute Pearson covariance coefficient and the normalized mutual information. Then, the product is calculated and an graph edge between this two dimensions is created, if this value is at least $t_e$. I suggest to parallelize the inner loop and leaf the outer one as it is. Depending on the size of the data set, this minimizes the number of page-in and page-out operations.\footnote{Do not hope, that an entire dimension can be hold by the cache, so cache locality is not an argument.} Because the Pearson covariance coefficient and the value of mutual information are symmetric, it is only required to calculated the one half of the adjacency matrix.
 
 Before calculating the cliques, the graph is refined by adding new edges. The performance trick by using the symmetry of the adjacency matrix works here too and the loops can be parallelized in the same way as done in the graph generation process.
 

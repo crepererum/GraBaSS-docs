@@ -65,3 +65,40 @@ GraBaSS is used with $t_e = 0.25$, $t_n = 0.65$ and $d = 3$. It extracts many su
 
 ENCLUS extracted very small subspaces. When increasing $\epsilon$, the algorithm does not finish within hours because the data set is too large. So I got no usable results.
 
+\section{Tests with outliers}
+
+\begin{table}
+	\caption{Test results}
+	\label{tab:tests}
+	\centering
+	\begin{tabular}{lrrrrr}
+		\toprule
+		\textbf{Data set} & \textbf{GraBaSS} & \textbf{ENCLUS} & \textbf{PCA} & \textbf{Random} & \textbf{Fullspace} \\
+		\midrule
+		pendigits & \textbf{\num{0.62}} & \num{0.52} & \num{0.43} & \num{0.55} & \num{0.55} \\
+		mutant & ? & -- & ? & ? & ? \\
+		energy & ? & -- & ? & ? & ? \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\section{Timing}\label{sec:time}
+
+\begin{table}
+	\caption{Timing in seconds}
+	\label{tab:time}
+	\centering
+	\begin{tabular}{lr}
+		\toprule
+		\textbf{Phase} & \textbf{mutant} \\
+		\midrule
+		Binning & \num{80.7} \\
+		Pre-calculation & \num{0.6} \\
+		Graph build-up & \num{893.0} \\
+		Graph fixing & \num{0.2} \\
+		Clique searcher & \num{1.4} \\
+		\midrule
+		Total & \num{976.1} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
