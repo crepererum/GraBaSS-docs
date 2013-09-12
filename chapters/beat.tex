@@ -1,8 +1,25 @@
 \chapter{How to beat the system}
-The method described in this thesis has some weaknesses. I will construct a dateset, which is not processed very well and I will discuss, why this type of data is not very common.
+GraBaSS only uses the relationship between two dimensions to build up a graph and find cliques which forms the subspaces. It is possible, that this pairwise approach does not find higher order dependencies. In this case, there are subspaces that are not found by GraBaSS or subspaces that do not reach their maximum size. The pairwise approach was not only chosen for performance but also because it is sufficient for the most data set. In this chapter, I will show how a higher order data set could look like, why this kind is not very common and how to handle them.
 
 \section{Constructing a special dataset}\label{sec:constr}
-Consider the following a dataset, that is made of many random points $(x, y, z) \in \left[0, 1\right)^3$, that satisfy the following constraint:
+In mathematical terms, higher order dependencies exists because of the following fact:
+\begin{envtheo}\label{theo:lowdep}
+	Given three dimensions $X$, $Y$ and $Z$, which satisfy the following requirement:
+	\begin{equation}\label{equ:low_independency}
+		\begin{aligned}
+			\prob{X = x, Y = y} &= \prob{X = x} \prob{Y = y},\quad & \forall (x,y) &\in X \times Y \\
+			\prob{Y = y, Z = z} &= \prob{Y = y} \prob{Z = z},\quad & \forall (y,z) &\in Y \times Z \\
+			\prob{Z = z, X = x} &= \prob{Z = z} \prob{X = x},\quad & \forall (z,x) &\in Z \times X
+		\end{aligned}
+	\end{equation}
+	there can cases where $\exists (x,y,z) \in X \times Y \times Z$:
+	\begin{equation}
+		\prob{X = x, Y = y, Z = z} \neq \prob{X = x} \prob{Y = y} \prob{Z = z}
+	\end{equation}
+	So condition~\ref{equ:low_independency} is not sufficient for independence of the given dimensions.
+\end{envtheo}
+
+To illustrate the situation explained in theorem~\ref{theo:lowdep}, consider the following a dataset, that is made of many random points $(x, y, z) \in \left[0, 1\right)^3$, that satisfy the following constraint:
 \begin{equation}\label{eq:beat}
 	(x + y + z) \bmod 1 = 0
 \end{equation}
@@ -18,8 +35,8 @@ The points are uniform distributed if you project them on one or two dimensions.
 	\hfill
 \end{figure}
 
-The problem occures every time, when the dataset contains a subspace with $n \in \set{N}_+$ Dimensions but $m \in \left\{1,\dots,n-1\right\}$ degrees of freedom. Furthermore the dependency of each dimension on the degrees of freedom has to be equal.
+The problem occurs every time, when the dataset contains a subspace with $n \in \set{N}_+$ Dimensions but $m \in \left\{1,\dots,n-1\right\}$ degrees of freedom. Furthermore the dependency of each dimension on the degrees of freedom has to be equal, so no relation is visible in two dimensional projections. Especially the last condition is uncommon when looking at real world data sets.
 
 \section{Handling this issue}
-Because it datasets with generated dimensions are not very uncommon, I will propose a simple method to handle them. To get a good perfomance on high dimensional datasets, it is not possible to check distributions in subspaces where the size depends on the number of all dimensions. But as shown in \cite{journals/prl/SharmaP07}, a PCA can be computed in $O\left( d^2h + d^2n \right)$ where $h$ is the number of degrees of freedom. After this step, the algorithm will find the most common subspaces.
+For data sets which has dimensions described in theorem~\ref{theo:lowdep}, I will propose a simple method to handle them. To get a good performance on high dimensional datasets, it is not possible to check all higher order dependencies. Because the described problem occurs when the degrees of freedom are not aligned with the dimensions, a transformation of the dataset to the degrees of freedom would help. PCA is a well known method which finds such transformations. As shown in \cite{journals/prl/SharmaP07}, a PCA can be computed in $O ( \card{D}^2h + \card{D}^2\card{N} )$ where $h$ is the number of degrees of freedom. If the dependencies of the dimension are formed by a near-linear process, PCA will find them. The result of the transformation can be used as input for GraBaSS. The isolated subspaces and the transformation found by PCA together explain the relation between dimensions. If there is any prior knowledge about the data set, it can be used to find such problematic dimensions. Note, that PCA can also be applied to subspaces before and after using GraBaSS, where the pre-analysis subspaces can be extracted by using expert knowledge.
 
