@@ -130,12 +130,15 @@ To extract a measure of independence from the discrete data set, the mutual info
 
 To convert the value of mutual information to a similarity, it has to be normalized. To do so, the following term is used:
 
-\begin{envdef}[Normalized Mutual Information]
+\begin{envtheo}[Normalized Mutual Information]
 	The normalized mutual information of two dimension $X$ and $Y$ is calculated by the following equation
 	\begin{equation}
 		\mutual{x}{y}_{norm} = \frac{\mutual{X}{Y}}{\min{\left( \entropy{X}, \entropy{Y} \right)}}
 	\end{equation}
-\end{envdef}
+\end{envtheo}
+\begin{proof}
+	See \cite{mutual}.
+\end{proof}
 
 Mutual information and independence do not respect permutation of the bins. This can lead to very unintuitive results and makes the calculation heavily depend on the number of bins and their borders. To fix this, the information from the absolute Pearson correlation coefficient should be mixed in. This describes if two dimensions are linear correlated and avoids random permutations. The two similarities should be combined in a way that acts like a logic AND. Because booth values are real, but have the same range, a limited, non-complete logic can be used:
 
@@ -155,6 +158,7 @@ Please note, that this system is not correct in terms of logic, because $a \wedg
 It is now possible to combine different similarities to one final value. As described above, the mutual information is combined with the absolute Pearson correlation coefficient using the AND function or, in other words, a simple multiplication. Figure~\ref{fig:similarities} gives an overview about the different similarities and how they work together. There are also stronger and weaker definitions in terms of how the rely on a predefined structure. For example the absolute Pearson correlation coefficient only works well with linear correlation but avoids random permutations, whereas the normalized mutual information is more flexible but ignores permutations. Using this building blocks, it is possible to swap the final similarity when doing further research or combine it with new definitions.
 
 \begin{figure}
+	\centering
 	\input{figures/similarities.tex}
 	\caption{Different similarities}
 	\label{fig:similarities}

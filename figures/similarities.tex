@@ -2,14 +2,24 @@
 	\node[blocknode] (identity) {Identity};
 	\node[blocknode, right = 1 of identity.east] (pearson) {Pearson};
 	\node[blocknode, above right = 1 and 1 of identity.east] (pnorm) {$p$-norm};
-	\node[blocknode, below right = 1 and 3 of identity.east] (ml) {Machine Learning};
-	\node[blocknode, right = 8 of identity.east] (independence) {Independence};
+	\node[blocknode, below right = 1 and 2 of identity.east] (ml) {Machine Learning};
+	\node[blocknode, below right = 1 and 1 of ml.west] (mutual) {Mutual Information};
+	\node[blocknode, right = 1 of pearson.east] (nonlinear) {Non-Linear Correlations};
+	\node[blocknode, right = 2 of nonlinear.east] (independence) {Independence};
 
-	\draw[->] (identity.east) -- (pearson.west);
-	\draw[->] (identity.east) -- (pnorm.west);
-	\draw[->] (identity.east) -- (ml.west);
-	\draw[->] (pearson.east) -- (independence.west);
-	\draw[->] (pnorm.east) -- (independence.west);
-	\draw[->] (ml.east) -- (independence.west);
+	\node[coordinate, right = 0.5 of identity.east] (dummy1) {};
+	\node[coordinate, left = 1.5 of independence.west] (dummy2) {};
+
+	\draw[graphedge,-] (identity.east) |- (dummy1.west);
+	\draw[graphedge,->] (dummy1.east) |- (pnorm.west);
+	\draw[graphedge,->] (dummy1.east) |- (pearson.west);
+	\draw[graphedge,->] (dummy1.east) |- (ml.west);
+	\draw[graphedge,->] (dummy1.east) |- (mutual.west);
+	\draw[graphedge,->] (pearson.east) |- (nonlinear.west);
+	\draw[graphedge,-] (pnorm.east) -| (dummy2.west);
+	\draw[graphedge,-] (nonlinear.east) -| (dummy2.west);
+	\draw[graphedge,-] (ml.east) -| (dummy2.west);
+	\draw[graphedge,-] (mutual.east) -| (dummy2.west);
+	\draw[graphedge,->] (dummy2.east) |- (independence.west);
 \end{tikzpicture}
 
