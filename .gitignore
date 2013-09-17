@@ -23,6 +23,9 @@
 *.pdf
 svg/*
 
+# resources
+!logos/*
+
 # tmp files
 *.swp
 
