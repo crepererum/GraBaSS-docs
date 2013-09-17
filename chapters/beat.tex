@@ -1,4 +1,4 @@
-\chapter{How to beat the system}
+\chapter{How to beat the system}\label{chap:beat}
 GraBaSS only uses the relationship between two dimensions to build up a graph and find cliques which forms the subspaces. It is possible, that this pairwise approach does not find higher order dependencies. In this case, there are subspaces that are not found by GraBaSS or subspaces that do not reach their maximum size. The pairwise approach was not only chosen for performance but also because it is sufficient for the most data set. In this chapter, I will show how a higher order data set could look like, why this kind is not very common and how to handle them.
 
 \section{Constructing a special dataset}\label{sec:constr}
@@ -18,6 +18,9 @@ In mathematical terms, higher order dependencies exists because of the following
 	\end{equation}
 	So condition~\ref{equ:low_independency} is not sufficient for independence of the given dimensions.
 \end{envtheo}
+\begin{proof}
+	See example described below.
+\end{proof}
 
 To illustrate the situation explained in theorem~\ref{theo:lowdep}, consider the following a dataset, that is made of many random points $(x, y, z) \in \left[0, 1\right)^3$, that satisfy the following constraint:
 \begin{equation}\label{eq:beat}

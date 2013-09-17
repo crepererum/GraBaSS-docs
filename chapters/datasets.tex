@@ -1,4 +1,4 @@
-\chapter{High-Dimensional Datasets and Tests}
+\chapter{High-Dimensional Datasets and Tests}\label{chap:datasets}
 High dimensional datasets are not a very common research topics. In this chapter I will describe some data sources and possible applications of the described algorithm. I also show some interpretations of subspaces in different datasets and some failed approaches of finding them.
 
 This chapter will also compare GraBaSS against ENCLUS, which is described in \cite{enclus}. The main parameters of ENCLUS are named as stated in the paper, so they are $\epsilon$ and $\omega$, but the binning parameter is $\xi$, and describes the number of bins. So the parameter $\vartriangle$ of the ENCLUS paper for a dimension $X$ is $\vartriangle = \frac{\max{X} - \min{X}}{\xi}$. Both algorithms use the same implementation techniques and data backend described in chapter~\ref{chap:implementation}. They are compiled using Clang~3.3 using \texttt{-O3} and \texttt{-ffast-math} flags. Using this optimization, Clang is able to to vectorize some parts of the implementation. This means, that loops can be replaced by a variant that uses SIMD operations, which speeds up the compiled executable. The used TBB has version~4.0.
@@ -67,6 +67,10 @@ ENCLUS extracted very small subspaces. When increasing $\epsilon$, the algorithm
 
 \section{Tests with outliers}
 
+To test if the subspaces found be GraBaSS are usable for automatic data processing, I compared it to ENCLUS \cite{enclus}, PCA, random and the fullspace by doing an outlier analysis with LOF \cite{lof}. Because GraBaSS searches subspaces according to the similarity of the dimensions and does not look if the subspaces are good for outlier detection, a special post filtering is required. It should ensure that only subspaces are used for outlier detection which are good for this kind of analysis. I decided to use a very simple approach and filtered out subspaces found by GraBaSS with an entropy below a limit which is named $f_\mathrm{post}$. More advanced filtering techniques are left for further research. For the comparison with PCA, the PCA was calculated and $\card{D}$ subspaces are generated with increasing number of dimensions so that the first subspace only contains the first PCA dimensions, the second the first two and so on. To compare against a random selection of subspaces, 20 subspaces are generated. For each, the number of dimensions is chosen uniformly from $1$ to $\card{D}$ and then the dimensions are picked randomly.
+
+I used the pendigits, ozone and musk data set from the UCI Machine Learning Repository\footnote{\url{https://archive.ics.uci.edu/ml/index.html}}. The LOF values of all subspaces get summed up and the area under curve is calculated. The extraction of the true outliers from the data sets is described below. Table~\ref{tab:tests} shows a sum up of all results.
+
 \begin{table}
 	\caption{Test results}
 	\label{tab:tests}
@@ -75,12 +79,18 @@ ENCLUS extracted very small subspaces. When increasing $\epsilon$, the algorithm
 		\toprule
 		\textbf{Data set} & \textbf{GraBaSS} & \textbf{ENCLUS} & \textbf{PCA} & \textbf{Random} & \textbf{Fullspace} \\
 		\midrule
-		pendigits & \textbf{\num{0.62}} & \num{0.52} & \num{0.43} & \num{0.55} & \num{0.55} \\
-		mutant & ? & -- & ? & ? & ? \\
-		energy & ? & -- & ? & ? & ? \\
+		pendigits & \textbf{\num[detect-weight]{0.77}} & \num{0.52} & \num{0.43} & \num{0.55} & \num{0.55} \\
+		ozone & \textbf{\num[detect-weight]{0.66}} & \num{0.53} & \num{0.48} & \num{0.51} & \num{0.51} \\
+		musk & \textbf{\num[detect-weight]{0.74}} & \num{0.60} & \num{0.52} & \num{0.63} & \num{0.44} \\
 		\bottomrule
 	\end{tabular}
 \end{table}
+
+The pendigits data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Pen-Based+Recognition+of+Handwritten+Digits}} was prepared by choosing the smallest class and sampling this class down to create outliers. GraBaSS was invoked with $t_e = 0.003$, $t_n = 0.65$, $d = 2$ and $f_\mathrm{post} = 12.5$. It found \num{12} subspaces. I started ENCLUS with $\epsilon = 37$, $\omega = 12.745$ and $\xi = 82$ and I got \num{8} subspaces.
+
+Of the ozone data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Ozone+Level+Detection}} I chose the normal day as outliers because it was the best choice for all all subspace sets except of PCA. GraBaSS got fired up with $t_e = 0.05$, $t_n = 0.65$, $d = 3$ and $f_\mathrm{post} = 10.4$ and finished with \num{18} subspaces. ENCLUS was started with $\epsilon = 23$, $\omega = 10.6$ and $\xi = 50$ and gave me \num{10} subspaces.
+
+For the musk data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Musk+\%28Version+2\%29}} the musks class is chosen from the clean2 file to be the true outliers. GraBaSS got the following parameters: $t_e = 0.30$, $t_n = 0.32$, $d = 3$ and $f_\mathrm{post} = 5$. It produced \num{79} subspaces. ENCLUS got the parameters $\epsilon = 17$, $\omega = 8.2$ and $\xi = 81$ and found \num{329} subspaces.
 
 \section{Timing}\label{sec:time}
 
