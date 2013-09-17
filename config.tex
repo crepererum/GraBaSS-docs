@@ -114,6 +114,11 @@
 }
 \newcommand*\circled[1]{\tikz[baseline={($(char.south) + (0,0.5pt)$)}]{
 	\node[shape=circle,draw,inner sep=0.5pt,font=\tiny,thick] (char) {\textsf{#1}};}}
+\def\filledquad#1#2{
+\begin{scope}[shift={#1}]
+	\draw [fill=black](0,0) -- (#2,0) -- (#2,#2) -- (0,#2) -- cycle;
+\end{scope}
+}
 
 % bibtex
 \addbibresource{citiation.bib}

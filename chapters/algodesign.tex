@@ -147,7 +147,16 @@ To convert the value of mutual information to a similarity, it has to be normali
 	See \cite{mutual}.
 \end{proof}
 
-Mutual information and independence do not respect permutation of the bins. This can lead to very unintuitive results and makes the calculation heavily depend on the number of bins and their borders. To fix this, the information from the absolute Pearson correlation coefficient should be mixed in. This describes if two dimensions are linear correlated and avoids random permutations. The two similarities should be combined in a way that acts like a logic AND. Because booth values are real, but have the same range, a limited, non-complete logic can be used:
+Mutual information and independence do not respect permutation of the bins. This can lead to very unintuitive results and makes the calculation heavily depend on the number of bins and their borders. Figure~\ref{fig:permutation} shows an example of this problem. The dimensions of the two shown data sets have the same value of mutual information, but when it is clear that the dimensions shown in figure~\ref{subfig:perm_good} are more similar as the dimensions shown in figure~\ref{subfig:perm_bad}. To fix this, the information from the absolute Pearson correlation coefficient should be mixed in. This describes if two dimensions are linear correlated and avoids random permutations. The two similarities should be combined in a way that acts like a logic AND. Because booth values are real, but have the same range, a limited, non-complete logic can be used:
+
+\begin{figure}
+	\caption{Permutation of bins}
+	\label{fig:permutation}
+	\centering
+	\subfloat[\label{subfig:perm_good}Permutation with high similarity]{\input{figures/permutation_good.tex}}
+	\hfill
+	\subfloat[\label{subfig:perm_good}Permutation with low similarity]{\input{figures/permutation_bad.tex}}
+\end{figure}
 
 \begin{envdef}[Similarity logic]
 	Similarities can be used as logical values in the following way:

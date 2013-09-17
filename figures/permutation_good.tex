@@ -1,0 +1,13 @@
+\begin{tikzpicture}
+	\begin{scope}[scale=4.5]
+		\draw[style=help lines, xstep=0.1, ystep=0.1] (0,0) grid(1,1);
+
+		\foreach \x in {0.0,0.1,...,1.0} {
+			\filledquad{(\x,\x)}{0.1}
+		}
+
+		\draw[axis] (0,0) -- (1,0) node[right]{dim 7};
+		\draw[axis] (0,0) -- (0,1) node[above]{dim 8};
+	\end{scope}
+\end{tikzpicture}
+
