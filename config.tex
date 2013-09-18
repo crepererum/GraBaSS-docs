@@ -106,12 +106,19 @@
 	positioning
 }
 \tikzset{
+	scale plot marks/.is choice,
+	scale plot marks/false/.code={
+		\def\pgfuseplotmark##1{\pgftransformresetnontranslations\csname pgf@plot@mark@##1\endcsname}
+	},
+	scale plot marks/true/.style={},
+	scale plot marks/.default=true,
 	>=stealth',
 	axis/.style={->, very thick, >=stealth'},
 	graphedge/.style={ultra thick},
 	graphnode/.style={circle, draw},
 	blocknode/.style={draw, minimum width=4em},
-	dot/.style={mark=*, mark size=0.02em, only marks}
+	dot/.style={mark=*, mark size=0.08em, only marks, scale plot marks=false},
+	measure/.style={mark=*, mark size=0.12em, smooth, scale plot marks=false}
 }
 \newcommand*\circled[1]{\tikz[baseline={($(char.south) + (0,0.5pt)$)}]{
 	\node[shape=circle,draw,inner sep=0.5pt,font=\tiny,thick] (char) {\textsf{#1}};}}

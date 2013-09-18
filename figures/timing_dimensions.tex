@@ -2,25 +2,25 @@
 	\draw[style=help lines, xstep=0.2, ystep=0.2] (0,0) grid(1,1);
 
 	\foreach \x in {0.0,0.2,0.4,...,1.0} {
-		\mycalc{\nobjs}{\x*100000}
+		\mycalc{\nobjs}{\x*1000}
 		\node at (\x,0) [below, rotate=45, anchor=east, yshift=-4pt]{\num[round-precision=1,round-mode=figures]{\nobjs}};
 	}
 	\foreach \y in {0.0,0.2,0.4,...,1.0} {
-		\mycalc{\nsecGrabass}{\y*20}
-		\mycalc{\nsecEnclus}{\y*2000}
+		\mycalc{\nsecGrabass}{\y*125}
+		\mycalc{\nsecEnclus}{\y*2500}
 		\node[colcontrast] at (0,\y) [left]{\num[round-precision=0,round-mode=places]{\nsecGrabass}};
 		\node[colcontrast2] at (-0.1,\y) [left]{\num[round-precision=0,round-mode=places]{\nsecEnclus}};
 	}
 
-	\begin{scope}[yscale=5]
-		\draw[colcontrast] plot[measure] file{data/timing_objects_grabass.dat} node[right]{GraBaSS};
+	\begin{scope}[yscale=8]
+		\draw[colcontrast] plot[measure] file{data/timing_dimensions_grabass.dat} node[right]{GraBaSS};
 	\end{scope}
 
-	\begin{scope}[yscale=5]
-		\draw[colcontrast2] plot[measure] file{data/timing_objects_enclus.dat} node[right]{ENCLUS};
+	\begin{scope}[yscale=4]
+		\draw[colcontrast2] plot[measure] file{data/timing_dimensions_enclus.dat} node[right]{ENCLUS};
 	\end{scope}
 
-	\draw[axis] (0,0) -- (1,0) node[below right = 0.4 and 0.1]{\# Objects};
+	\draw[axis] (0,0) -- (1,0) node[below right = 0.2 and 0.1]{\# Dimensions};
 	\draw[axis] (0,0) -- (0,1) node[above left = 0.1 and -0.4]{Time in seconds};
 \end{tikzpicture}
 
