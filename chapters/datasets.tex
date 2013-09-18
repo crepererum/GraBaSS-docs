@@ -86,29 +86,69 @@ I used the pendigits, ozone and musk data set from the UCI Machine Learning Repo
 	\end{tabular}
 \end{table}
 
-The pendigits data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Pen-Based+Recognition+of+Handwritten+Digits}} was prepared by choosing the smallest class and sampling this class down to create outliers. GraBaSS was invoked with $t_e = 0.003$, $t_n = 0.65$, $d = 2$ and $f_\mathrm{post} = 12.5$. It found \num{12} subspaces. I started ENCLUS with $\epsilon = 37$, $\omega = 12.745$ and $\xi = 82$ and I got \num{8} subspaces.
+The pendigits data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Pen-Based+Recognition+of+Handwritten+Digits}} was prepared by choosing the smallest class and sampling this class down to create outliers. GraBaSS was invoked with $t_e = 0.003$, $t_n = 0.65$, $d = 2$ and $f_\mathrm{post} = 12.5$. The post filter stripped \num{5} 4-dimensional subspaces so it finally found \num{12} subspaces. I started ENCLUS with $\epsilon = 37$, $\omega = 12.745$ and $\xi = 82$ and I got \num{8} subspaces.
 
-Of the ozone data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Ozone+Level+Detection}} I chose the normal day as outliers because it was the best choice for all all subspace sets except of PCA. GraBaSS got fired up with $t_e = 0.05$, $t_n = 0.65$, $d = 3$ and $f_\mathrm{post} = 10.4$ and finished with \num{18} subspaces. ENCLUS was started with $\epsilon = 23$, $\omega = 10.6$ and $\xi = 50$ and gave me \num{10} subspaces.
+Of the ozone data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Ozone+Level+Detection}} I chose the normal day as outliers because it was the best choice for all all subspace sets except of PCA. GraBaSS got fired up with $t_e = 0.05$, $t_n = 0.65$, $d = 3$ and $f_\mathrm{post} = 10.4$ and finished with \num{18} subspaces. This example shows that the post filter does always removed the smallest subspace, because it removed some 1-dimensional, the only existing 2-dimensional and some 3-dimensional subspaces, but the final result still has some 1-dimensional subspaces left. ENCLUS was started with $\epsilon = 23$, $\omega = 10.6$ and $\xi = 50$ and gave me \num{10} subspaces.
 
-For the musk data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Musk+\%28Version+2\%29}} the musks class is chosen from the clean2 file to be the true outliers. GraBaSS got the following parameters: $t_e = 0.30$, $t_n = 0.32$, $d = 3$ and $f_\mathrm{post} = 5$. It produced \num{79} subspaces. ENCLUS got the parameters $\epsilon = 17$, $\omega = 8.2$ and $\xi = 81$ and found \num{329} subspaces.
+For the musk data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Musk+\%28Version+2\%29}} the musks class is chosen from the clean2 file to be the true outliers. GraBaSS got the following parameters: $t_e = 0.30$, $t_n = 0.32$, $d = 3$ and $f_\mathrm{post} = 5$. The post filter removed \num{8} of \num{22} 1-dimensional subspaces, so LOF got \num{79} subspaces as input. The filter did a pretty good job here because it removed many trash dimensions. I passed ENCLUS the parameters $\epsilon = 17$, $\omega = 8.2$ and $\xi = 81$ and found \num{329} subspaces.
+
+In all cases it was easier to get good subspaces from GraBaSS as from ENCLUS because ENCLUS tended to explode in complexity when trying to get high dimensional subspaces. This shows that the bottom-up approach the authors chosen for it does not work very well. When looking at the results the small subspaces always look like the have to get merged later but the complexity of the algorithm prevented me from running ENCLUS with such a parameter.
 
 \section{Timing}\label{sec:time}
 
-\begin{table}
-	\caption{Timing in seconds}
-	\label{tab:time}
+\begin{figure}
+	\caption{Scalability comparison}
+	\label{fig:scale}
 	\centering
-	\begin{tabular}{lr}
-		\toprule
-		\textbf{Phase} & \textbf{mutant} \\
-		\midrule
-		Binning & \num{80.7} \\
-		Pre-calculation & \num{0.6} \\
-		Graph build-up & \num{893.0} \\
-		Graph fixing & \num{0.2} \\
-		Clique searcher & \num{1.4} \\
-		\midrule
-		Total & \num{976.1} \\
-		\bottomrule
-	\end{tabular}
+	\input{figures/timing_objects.tex}
+\end{figure}
+
+\begin{table}
+	\caption{Time profile}
+	\label{tab:tprofile}
+	\subfloat[\label{subtab:objs}Synthetic data set with \num{100} dimensions]{
+		\begin{tabularx}{\textwidth}{lRRRRRR}
+			\toprule
+			\# Objects & \num{10000} & \num{20000} & \num{40000} & \num{60000} & \num{80000} & \num{100000} \\
+			\midrule
+			Binning & \SI{39}{\percent} & \SI{40}{\percent} & \SI{41}{\percent} & \SI{40}{\percent} & \SI{41}{\percent} & \SI{41}{\percent} \\
+			Pre-calulation & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
+			Graph build-up & \SI{59}{\percent} & \SI{60}{\percent} & \SI{59}{\percent} & \SI{59}{\percent} & \SI{58}{\percent} & \SI{58}{\percent} \\
+			Graph fixing & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
+			Clique searcher & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
+			\midrule
+			Total & \num{1.89} & \num{3.59} & \num{7.17} & \num{10.76} & \num{14.56} & \num{18.25} \\
+			\bottomrule
+		\end{tabularx}
+	} \\
+	\subfloat[\label{subtab:dims}Synthetic data set with \num{10000} objects]{
+		\begin{tabularx}{\textwidth}{lRRRRRR}
+			\toprule
+			\# Dimensions & \num{100} & \num{200} & \num{400} & \num{600} & \num{800} & \num{1000} \\
+			\midrule
+			Binning & \SI{39}{\percent} & \SI{26}{\percent} & \SI{29}{\percent} & \SI{18}{\percent} & \SI{17}{\percent} & \SI{14}{\percent} \\
+			Pre-calulation & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
+			Graph build-up & \SI{59}{\percent} & \SI{73}{\percent} & \SI{70}{\percent} & \SI{82}{\percent} & \SI{82}{\percent} & \SI{86}{\percent} \\
+			Graph fixing & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
+			Clique searcher & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
+			\midrule
+			Total & \num{1.89} & \num{5.79} & \num{22.91} & \num{43.76} & \num{77.04} & \num{118.52} \\
+			\bottomrule
+		\end{tabularx}
+	} \\
+	\subfloat[\label{subtab:real}Real world data sets]{
+		\begin{tabularx}{\textwidth}{lRRR}
+			\toprule
+			Data set & architecture & drugs & musk \\
+			\midrule
+			Binning & \SI{61}{\percent} & \SI{30}{\percent} & \SI{40}{\percent} \\
+			Pre-calulation & \SI{< 1}{\percent} & \SI{3}{\percent} & \SI{< 1}{\percent} \\
+			Graph build-up & \SI{38}{\percent} & \SI{67}{\percent} & \SI{57}{\percent} \\
+			Graph fixing & \multicolumn{3}{c}{\SI{< 1}{\percent}} \\
+			Clique searcher & \multicolumn{3}{c}{\SI{< 1}{\percent}} \\
+			\midrule
+			Total & \num{20.72} & \num{76.65} & \num{1.94} \\
+			\bottomrule
+		\end{tabularx}
+	}
 \end{table}

@@ -1,0 +1,18 @@
+\begin{tikzpicture}[x=15em,y=40em]
+	\draw[style=help lines, xstep=0.2, ystep=0.05] (0,0) grid(1,0.2);
+
+	\foreach \x in {0.0,0.2,0.4,...,1.0} {
+		\mycalc{\nobjs}{\x*100000}
+		\node at (\x,0) [below, rotate=45, anchor=east, yshift=-4pt]{\num[round-precision=1,round-mode=figures]{\nobjs}};
+	}
+	\foreach \y in {0.00,0.05,...,0.201} {
+		\mycalc{\nsec}{\y*100}
+		\node at (0,\y) [left]{\num[round-precision=1,round-mode=places]{\nsec}};
+	}
+
+	\draw[colcontrast] plot[smooth,mark=*] file{data/timing_objects_grabass.dat} node[right]{GraBaSS};
+
+	\draw[axis] (0,0) -- (1,0) node[right]{Number of objects};
+	\draw[axis] (0,0) -- (0,0.2) node[above]{Time in seconds};
+\end{tikzpicture}
+
