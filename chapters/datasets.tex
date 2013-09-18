@@ -153,3 +153,25 @@ In all cases it was easier to get good subspaces from GraBaSS as from ENCLUS bec
 		\end{tabularx}
 	}
 \end{table}
+
+\begin{table}
+	\caption{Scaling of graph processing}
+	\label{tab:graph}
+	\centering
+	\begin{tabularx}{0.95\textwidth}{lRRRRRR}
+		\toprule
+		$t_e$ & \num{1} & \num{e-1} & \num{e-2} & \num{e-3} & \num{e-4} & \num{e-5} \\
+		\midrule
+		\# Edges & \num{0} & \num{1594} & \num{10546} & \num{18866} & \num{22087} & \num{22921} \\
+		Max. \# neighbors & \num{0} & \num{53} & \num{178} & \num{236} & \num{257} & \num{261} \\
+		Degeneracy & \num{0} & \num{42} & \num{112} & \num{178} & \num{200} & \num{208} \\
+		\# Cliques & \num{272} & \num{134} & \num{2202} & \num{6977} & \num{13951} & \num{23557} \\
+		\midrule
+		Graph build-up & \SI{48}{\percent} & \SI{48}{\percent} & \SI{44}{\percent} & \SI{45}{\percent} & \SI{44}{\percent} & \SI{42}{\percent} \\
+		Graph fixing & \SI{< 1}{\percent} & \SI{< 1}{\percent} & \SI{19}{\percent} & \SI{21}{\percent} & \SI{24}{\percent} & \SI{25}{\percent} \\
+		Clique searcher & \SI{< 1}{\percent} & \SI{< 1}{\percent} & \SI{< 1}{\percent} & \SI{3}{\percent} & \SI{4}{\percent} & \SI{5}{\percent} \\
+		\midrule
+		Total & \num{17.07} & \num{18.19} & \num{24.83} & \num{29.50} & \num{32.02} & \num{33.02} \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
