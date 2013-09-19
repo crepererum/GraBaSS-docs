@@ -1,30 +1,30 @@
 \chapter{Designing a high performance algorithm}\label{chap:algodesign}
-To handle current and future big datasets a special approach is required. In this chapter, I will design a high perfomance algorithm that is able to handle this task. The main goal is a method that does not beat the comlexity of $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} + \card{D}^2 \cdot \card{N} )$. This complexity is a good upper bound. It combines the bounds of two different task. The first one is the preprocessing and structure detection of all objects in all dimensions. $\mathcal{O} ( \card{D} \cdot \card{N} )$ would be enough to normalize the data, but $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} )$ allowes some better methods like sorting. The second part is the detection of relations between all dimensions, which could be done in $\mathcal{O} ( \card{D}^2 )$. Because reducing the dimenions to a fixed set of features does honor a non fixed number of elements, a good method needs $\mathcal{O} ( \card{D}^2 \cdot \card{N} )$.
+To handle current and future big datasets a special approach is required. In this chapter I will design a high performance algorithm that is able to handle this task. The main goal is a method that does not beat the complexity of $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} + \card{D}^2 \cdot \card{N} )$. This complexity is a good upper bound. It combines the bounds of two different tasks. The first one is the preprocessing and structure detection of all objects in all dimensions. $\mathcal{O} ( \card{D} \cdot \card{N} )$ would be enough to normalize the data, but $\mathcal{O} ( \card{D} \cdot \card{N} \cdot \log{\card{N}} )$ allows some better methods like sorting. The second part is the detection of relations between all dimensions, which could be done in $\mathcal{O} ( \card{D}^2 )$. In combination with a non-fixed number a elements, a good method needs $\mathcal{O} ( \card{D}^2 \cdot \card{N} )$.
 
-To define a algorithm, it is necessary to describe what it should calculate. As stated in the introduction, it should extract subspaces from the data set, so a description of what a subspace is would be helpful:
+To define a algorithm, it is necessary to describe what it should calculate. As stated in the introduction it should extract subspaces from the data set, so a description of what a subspace is would be helpful:
 \begin{envdef}[Subspace]
 	A subspace is a collection of dimensions which are similar to each other. This collection should be maximal. It is possible that one dimension is contained in multiple subspaces or, in other words, that subspaces overlap.
 \end{envdef}
 
-According to the definitions, the set of all subspaces does to not partition the set of dimensions. The definition also avoids a description if the relation of dimensions in one subspace are pairwise or can only be described by functions with more than two arguments. For GraBaSS I chose a pairwise definition because it is sufficient for the most real world data sets. As tests in chapter~\ref{chap:datasets} show, I am right with this assumption. Chapter~\ref{chap:beat} describes when this can be a problem and how to work around it.
+According to the definitions the set of all subspaces does to not partition the set of dimensions. The definition also avoids a description if the relation of dimensions in one subspace are pairwise or can only be described by functions with more than two arguments. For GraBaSS I chose a pairwise definition because it is sufficient for the most real world data sets. As tests in chapter~\ref{chap:datasets} show, I am right with this assumption. Chapter~\ref{chap:beat} describes when this can be a problem and how to work around it.
 
 \section{A question of similarity}
-To search and find subspaces and to use them for further analysis, it is necessary to describe, when dimenions should be share the same subspace. In words, a good but very common describtion is, that they should be similar. But this term has different meanings for different applications and in different fields of science. To use the results for analysis, it is important that you know which structures or attributes dimenions of the same subspace share. It does not make any sense to use a metric based on covariance for the subspace search algorithm, when your outlier detection uses an manhatten metric to detect high distance points. So, the similarity metric should be choosen wisely. To do so, it should defined:
+To search and find subspaces and to use them for further analysis, it is necessary to describe when dimensions should be share the same subspace. In words, a good but very common description is that they should be similar. But this term has different meanings for different applications and in different fields of science. To use the results for analysis, it is important to know which structures or attributes dimensions of the same subspace share. It does not make any sense to use a metric based on covariance for the subspace search algorithm when your outlier detection uses an Manhattan metric to detect high distance points. So, the similarity metric should be chosen wisely. To do so, it should defined:
 
 \begin{envdef}[Similarity]
-	A similary $s : D \times D \rightarrow [0,1]$ describes, how similar two dimensions are. $0$ means ``not similar'' and $1$ means ``very similar''. It must satisfy the following attributes:
+	A similarity $s : D \times D \rightarrow [0,1]$ describes how similar two dimensions are. $0$ means ``not similar'' and $1$ means ``very similar''. It must satisfy the following attributes:
 	\begin{enumerate}
-		\item Computability: Their has to be an algorithm, two calculate the similary for two given dimenions and a fixed number of points.
-		\item Symmetry: For all dimentions $a,b \in D$ it holds that $s(a,b) = s(b,a)$.
-		\item Identity: For all dimentions $a \in D$ it holds that $s(a,a) = 1$.
+		\item Computability: Their has to be an algorithm, two calculate the similarity for two given dimensions and a fixed number of points.
+		\item Symmetry: For all dimensions $a,b \in D$ it holds that $s(a,b) = s(b,a)$.
+		\item Identity: For all dimensions $a \in D$ it holds that $s(a,a) = 1$.
 	\end{enumerate}
 \end{envdef}
 
-The definition also includes the computability. Because this thesis is about high performance feature selection, the complexity of the algorithm is highly important.\footnote{Please notice, that big constant factors are also important if they are part of the algorithm. Constant factors should be small if possible.} I will no try to evaluate diffent approaches and try to categorize them.
+The definition also includes the computability. Because this thesis is about high performance feature selection, the complexity of the algorithm is highly important.\footnote{Please notice that big constant factors are also important if they are part of the algorithm. Constant factors should be small if possible.}
 
-A well known similary is based on the Pearson correlation coefficient. It can be cutted to $[0,1]$, squared or the absolute value can be calcuated to get a similary. The correlation coefficient can be calculated in $\mathcal{O}(\card{N})$. For many applications, this type of similary is sufficient. Because it describes a linear relation, there is an underlying structure which has to exist. Because this structure only has two degrees of freedom, it is very baised.
+A well known similarity is based on the Pearson correlation coefficient. It can be cut to $[0,1]$, squared or the absolute value can be calculated to get a similarity. The correlation coefficient can be calculated in $\mathcal{O}(\card{N})$. For many applications, this type of similarity is sufficient. Because it describes a linear relation, there is an underlying structure which has to exist. Because this structure only has two degrees of freedom, it is very biased.
 
-To handle complex data, a less baised similary has to be constructed. One way to do it is to utilizy metrics:
+To handle complex data, a less biased method has to be constructed. One way to do it is to utilize metrics:
 
 \begin{envtheo}
 	Given a limited metric $m : D \times D \rightarrow [0,\infty)$, $l := \sup_{a,b \in D \times D} m(a,b) < \infty$ a similarity can be constructed in the following way:
@@ -33,21 +33,21 @@ To handle complex data, a less baised similary has to be constructed. One way to
 	\end{equation}
 \end{envtheo}
 
-When the dimenions of the input set are limited, all $p$-norms can be used to construct a similarity by calculating the distance of all points in the dataset:
+When the dimensions of the input set are limited, all $p$-norms can be used to construct a similarity by calculating the distance of all points in the dataset:
 
 \begin{envtheo}
-	Given a $p$-norm $\|\cdot\|_p$, a similary can be constructed by using the normalized sum of all distances:
+	Given a $p$-norm $\|\cdot\|_p$, a similarity can be constructed by using the normalized sum of all distances:
 	\begin{equation}
 		s(a,b) = 1 - \frac{\|\pi_a(N) - \pi_b(N)\|_p}{\card{N}}
 	\end{equation}
 \end{envtheo}
 
-$p$-norm can be calculated very efficient but are more baised than the Pearson correlation coefficient, because they are only high if two dimenions are nearly equal in many dimenions.\footnote{The number of this dimenions depends on the choosen $p$} So they are also baised and not usable for many applications.
+$p$-norms can be calculated very efficient but are more biased than the Pearson correlation coefficient, because they are only high if two dimensions are nearly equal in many dimensions.\footnote{The number of this dimensions depends on the chosen $p$} So they are also biased and not usable for many applications.
 
-Another approach to create new similarities is to utilizy a metric together with a machine learning algorithm. This should be less baised because many machine learning algorithms can produce very unbaised results:
+Another approach to create new similarities is to combine a metric together with a machine learning algorithm. This should be less biased because many machine learning algorithms can produce very flexible results:
 
 \begin{envtheo}
-	Given a two dimenions $a,b \in D$, a set of prediction algorithms $P = \{ p : \set{R} \rightarrow \set{R} \}$ and a machine learning algorithm $l : (\set{R} \rightarrow \set{R}) \rightarrow P$, a similary can be formed by choosing two subsets $T,V \subseteq N$, $T \cup V = N$, train the preciction algorithm and validating the results by messuring the difference:
+	Given a two dimensions $a,b \in D$, a set of prediction algorithms $P = \{ p : \set{R} \rightarrow \set{R} \}$ and a machine learning algorithm $l : (\set{R} \rightarrow \set{R}) \rightarrow P$, a similarity can be formed by choosing two subsets $T,V \subseteq N$, $T \cup V = N$, train the prediction algorithm and validating the results by measuring the difference:
 	\begin{align}
 		p_1 &= l( \pi_a(T), \pi_b(T) )\\
 		p_2 &= l( \pi_b(T), \pi_a(T) )\\
@@ -59,7 +59,7 @@ Another approach to create new similarities is to utilizy a metric together with
 
 Please choose the training and validation set wisely, especially when you expect outliers in the dataset.
 
-Since machine learning algorithms allow comparison of dimensions with flexible structure, a important question is how flexible a structure can be to allow a comparison. Mathematics had found a answer to this question long time ago. They defined the term and rules of independence:
+Since machine learning algorithms allow comparison of dimensions with flexible structure, an important question is how flexible a structure can be to allow a comparison. Mathematics had found a answer to this question long time ago. They defined the term and rules of independence:
 
 \begin{envdef}[Independence]
 	Two dimensions $X,Y \in D$ are independent, iff:
@@ -70,7 +70,7 @@ Since machine learning algorithms allow comparison of dimensions with flexible s
 
 This definition is used by many mathematics worldwide but has one problem. If we assume a limited dataset with real number values and just a little bit random noise, no value in the dimensions will appear twice. According to the definition of independence, all dimensions will be independent in this situation. So it is necessary to extend the Dirac masses to another probability. This can be done by using window functions, which leads to an continuous probability. Another method is binning by using fixed size bins. Because it is possible that the data resolution is different in different parts of the dimension, guessing window sizes or bin widths is not possible every time and can lead to wrong results. To circumvent this problem, I will introduce a method that is known widely but not used by many researcher and analysts: binning with fixed number of objects per bin. To express the effect of this method, I will call it rewrapping.
 
-Rewrapping handles dense data regions very well and ignores non used regions. It is also able to reverse every strict monotone function. This kind of function may be occur as part of the measurement of real world data. Figure~\ref{fig:rewrap} illustrates the process of rewrapping. The number of bins is not a user provided parameter. It is set to $\sqrt{\card{N}}$ so that every grid cell should contain $1$ object if the dimensions are independent.
+Rewrapping handles dense data regions very well and ignores non used regions. It is also able to reverse every strict monotone function. This kind of function may occur as part of the measurement of real world data. Figure~\ref{fig:rewrap} illustrates the process of rewrapping. The number of bins is not a user provided parameter. It is set to $\sqrt{\card{N}}$ to honor the fact the more data points also describe a more detailed information about the distribution.
 
 \begin{figure}
 	\caption{Rewrapping}
@@ -78,15 +78,15 @@ Rewrapping handles dense data regions very well and ignores non used regions. It
 	\centering
 	\subfloat[\label{subfig:rewrap1_source}Sample 1: Input data]{\input{figures/rewrap1_source.tex}}
 	\hfill
-	\subfloat[\label{subfig:rewrap1_target}Sample 1: Result of rewrap]{\input{figures/rewrap1_target.tex}}
+	\subfloat[\label{subfig:rewrap1_target}Sample 1: Result of rewrapping]{\input{figures/rewrap1_target.tex}}
 	\\
 	\subfloat[\label{subfig:rewrap2_source}Sample 2: Input data]{\input{figures/rewrap2_source.tex}}
 	\hfill
-	\subfloat[\label{subfig:rewrap2_target}Sample 2: Result of rewrap]{\input{figures/rewrap2_target.tex}}
+	\subfloat[\label{subfig:rewrap2_target}Sample 2: Result of rewrapping]{\input{figures/rewrap2_target.tex}}
 	\\
 	\subfloat[\label{subfig:rewrap3_source}Sample 3: Input data]{\input{figures/rewrap3_source.tex}}
 	\hfill
-	\subfloat[\label{subfig:rewrap3_target}Sample 3: Result of rewrap]{\input{figures/rewrap3_target.tex}}
+	\subfloat[\label{subfig:rewrap3_target}Sample 3: Result of rewrapping]{\input{figures/rewrap3_target.tex}}
 \end{figure}
 
 Because real value data can contain discrete values, a small modification is required. Bins are created from the lower to the upper bound of the dataset. If the border between a created and a new bin will split a set of equal values, the entire set will assigned to the lower bin. This can lead to a different bin number and fill size. See algorithm~\ref{alg:buildBins} for a complete definition.
@@ -135,7 +135,7 @@ To extract a measure of independence from the discrete data set, the mutual info
 	\end{align}
 \end{envdef}
 
-To convert the value of mutual information to a similarity, it has to be normalized. To do so, the following term is used:
+To convert the value of mutual information to a similarity, it has to be normalized by the following method:
 
 \begin{envtheo}[Normalized Mutual Information]
 	The normalized mutual information of two dimension $X$ and $Y$ is calculated by the following equation
@@ -147,7 +147,7 @@ To convert the value of mutual information to a similarity, it has to be normali
 	See \cite{mutual}.
 \end{proof}
 
-Mutual information and independence do not respect permutation of the bins. This can lead to very unintuitive results and makes the calculation heavily depend on the number of bins and their borders. Figure~\ref{fig:permutation} shows an example of this problem. The dimensions of the two shown data sets have the same value of mutual information, but when it is clear that the dimensions shown in figure~\ref{subfig:perm_good} are more similar as the dimensions shown in figure~\ref{subfig:perm_bad}. To fix this, the information from the absolute Pearson correlation coefficient should be mixed in. This describes if two dimensions are linear correlated and avoids random permutations. The two similarities should be combined in a way that acts like a logic AND. Because booth values are real, but have the same range, a limited, non-complete logic can be used:
+Mutual information and independence do not respect permutation of the bins. This can lead to very unintuitive results and makes the calculation heavily depend on the number of bins and their borders. Figure~\ref{fig:permutation} shows an example of this problem. The dimensions of the two shown data sets have the same value of mutual information, but when it is clear that the dimensions shown in figure~\ref{subfig:perm_good} are more similar as the dimensions shown in figure~\ref{subfig:perm_bad}. To fix this, the information from the absolute Pearson correlation coefficient could be mixed in. This describes if two dimensions are linear correlated and avoids random permutations. The two similarities should be combined in a way that acts like a logic AND. Because both values are real, but have the same range, a limited, non-complete logic can be used:
 
 \begin{figure}
 	\caption{Permutation of bins}
@@ -158,7 +158,7 @@ Mutual information and independence do not respect permutation of the bins. This
 	\subfloat[\label{subfig:perm_bad}Permutation with low similarity]{\input{figures/permutation_bad.tex}}
 \end{figure}
 
-\begin{envdef}[Similarity logic]
+\begin{envdef}[Similarity Logic]
 	Similarities can be used as logical values in the following way:
 	\begin{align}
 		true &\equiv 1\\
@@ -171,7 +171,7 @@ Mutual information and independence do not respect permutation of the bins. This
 
 Please note, that this system is not correct in terms of logic, because $a \wedge a = a$, but $a \wedge a \equiv a^2 \neq a$. This fact does not make this system wrong, because it makes sense that the claim of $a \wedge a$ requires $a$ to be stronger than simple claim $a$ alone.
 
-It is now possible to combine different similarities to one final value. As described above, the mutual information is combined with the absolute Pearson correlation coefficient using the AND function or, in other words, a simple multiplication. Figure~\ref{fig:similarities} gives an overview about the different similarities and how they work together. There are also stronger and weaker definitions in terms of how the rely on a predefined structure. For example the absolute Pearson correlation coefficient only works well with linear correlation but avoids random permutations, whereas the normalized mutual information is more flexible but ignores permutations. Using this building blocks, it is possible to swap the final similarity when doing further research or combine it with new definitions.
+It is now possible to combine different similarities to one final value. As described above, the mutual information is combined with the absolute Pearson correlation coefficient using the AND function or, in other words, by calculating the product of them. Figure~\ref{fig:similarities} gives an overview about the different similarities and how they work together. There are also stronger and weaker definitions in terms of how the rely on a predefined structure. For example the absolute Pearson correlation coefficient only works well with linear correlation but avoids random permutations, whereas the normalized mutual information is more flexible but ignores permutations. Using this building blocks, it is possible to swap the final similarity when doing further research or combine it with new definitions.
 
 \begin{figure}
 	\centering
@@ -181,14 +181,14 @@ It is now possible to combine different similarities to one final value. As desc
 \end{figure}
 
 \section{From similarity to subspace}
-Based on the combined similarity it is possible to calculate subspaces. It is possible to calculate distances between all pairs of dimensions, because of the nature of subspaces. So it is important to find groups in this $\card{D}^2$ relations highly efficient.
+Based on the combined similarity it is possible to calculate subspaces by calculating the binary relation between all dimensions and find groups that have strong connections. It is important to find this groups in this $\card{D}^2$ relations highly efficient.
 
-Next, I want to discuss how subspaces are formed. Two dimensions should be contained in the subspaces, when they are similar. This can be expressed by a threshold $p_t \in [0,1]$, which the combined similarity should have. By stripping down the similarity matrix to a binary matrix, the dimensions form a graph. This speeds up the calculation, because it allows fast set operations and memory effective management. Because the most data sets have very different dimensions, the number of edges should be low.
+Next, I want to discuss how subspaces are formed. Two dimensions should be contained in the subspaces, when they are similar. This can be expressed by a threshold $p_e \in [0,1]$, which the combined similarity should have. By stripping down the similarity matrix to a binary matrix, the dimensions form a graph. This speeds up the calculation, because it allows fast set operations and memory effective management. Because the most data sets have very different dimensions, the number of edges should be low.
 
-Another important attribute of subspaces is that all contained dimensions are similar to each other. This attribute is already described as clique. Because the graph is dense it has a low degeneracy $d \in \set{N}_0$. So, the cliques can be calculated in $\mathcal{O}(d \cdot (\card{D} - d) \cdot 3^{\frac{d}{3}})$ by using \cite{listingCliques}. Because the cliques forms the subspaces, this is the complete algorithm for converting the combined similarity to subspaces.
+The important attribute of subspaces is that all contained dimensions are similar to each other. For graphs this attribute is already described as clique. Because the graph is dense it has a low degeneracy $d \in \set{N}_0$. So, the cliques can be calculated in $\mathcal{O}(d \cdot (\card{D} - d) \cdot 3^{\frac{d}{3}})$ by using \cite{listingCliques}. Because the cliques forms the subspaces, this is the complete algorithm for converting the combined similarity to subspaces.
 
-\section{Optimize graph structure}
-A core problem of strict clique searchers is the heavy fragmentation if only one edge missing. Figure~\ref{subfig:opt_graph1} shows an example where the nodes semi clique $\left\{1,2,3,4\right\}$ is splitted into two cliques because of the absence of the edge $(1,3)$. For some applications it could be helpful to add this edge to the graph and join the two cliques into one. The first method to do it is the utilyzation a distance graph:
+\section{Optimizing the graph structure}
+A core problem of strict clique searchers is the heavy fragmentation if only one edge missing. Figure~\ref{subfig:opt_graph1} shows an example where the nodes semi-clique $\left\{1,2,3,4\right\}$ is split into two cliques because of the absence of the edge $(1,3)$. For some applications it could be helpful to add this edge to the graph and join the two cliques into one. The first method to do it is the utilization a distance graph:
 \begin{envdef}[Strict Distance Graph]
 	Given a graph $G=(V,E)$ and a distance $n \in \set{N}_0$, the strict distance graph $G^n=(V,E^n)$ is give by:
 	\begin{align}
@@ -208,16 +208,16 @@ A core problem of strict clique searchers is the heavy fragmentation if only one
 	\hfill
 	\subfloat[\label{subfig:opt_graph4}Bidirectional filtered distance with $\alpha=\frac23$]{\input{figures/graph4.tex}}
 \end{figure}
-Because it does not make any sense to forget about the given edges when calcuating higher distances, the definition of the joined distance graph ist more useful:
+Because it does not make any sense to forget about the given edges when calculating higher distances, the definition of the joined distance graph is more useful:
 \begin{envdef}[Joined Distance Graph]
-	Given a graph $G=(V,E)$ and a distance $n \in \set{N}_+$, the joined distance graph $G^{\overline{n}}=(V,E^{\overline{n}})$ is definied as followed:
+	Given a graph $G=(V,E)$ and a distance $n \in \set{N}_+$, the joined distance graph $G^{\overline{n}}=(V,E^{\overline{n}})$ is defined as followed:
 	\begin{equation}
 		E^{\overline{n}} = \bigcup_{i=1}^n E^i
 	\end{equation}
 \end{envdef}
-Using the joined distance graph fixes the problem, but does not produce the desired result. As seen in Figure~\ref{subfig:opt_graph2}, it attaches to many new vertices to the cliques and make the results unusable. The reason is that it does not count the strenght of the connection in the exisiting graph and so it creates some edges to weakly connected vertices. A messure for the connection rate between two vertices can be calculated by the following equation:
+Using the joined distance graph fixes the problem but does not produce the desired result. As seen in Figure~\ref{subfig:opt_graph2}, it attaches to many new vertexes to the cliques and make the results unusable. The reason is that it does not count the strength of the connection in the existing graph and so it creates some edges to weakly connected vertexes. A measure for the connection rate between two vertexes can be calculated by the following equation:
 \begin{envdef}[Connection Rate]
-	Given a graph $G=(V,E)$ and two vertices $v_1,v_2 \in V$, the connection rate $r_G(v_1,v_2) \in \left[0,1\right]$ can be calcuated by the relation of connected to all neighbors of $v_1$:
+	Given a graph $G=(V,E)$ and two vertexes $v_1,v_2 \in V$, the connection rate $r_G(v_1,v_2) \in \left[0,1\right]$ can be calculated by the relation of connected to all neighbors of $v_1$:
 	\begin{equation}
 		r_G(v_1,v_2) = \frac{
 			\card{ \left\{ v \in V \mid (v_1, v) \in E \right\} \cap \left\{ v \in V \mid (v,v_2) \in E \right\} }
@@ -226,33 +226,33 @@ Using the joined distance graph fixes the problem, but does not produce the desi
 		}
 	\end{equation}
 \end{envdef}
-Please notice that the connection rate is not symmetric. To honor the connection rate of the vertices, I use a filtered strict distance graph:
+Please notice that the connection rate is not symmetric. To honor the connection rate of the vertexes, I use a filtered strict distance graph:
 \begin{envdef}[Filtered Strict Distance Graph]
 	Given a graph $G=(V,E)$, a distance $n \in \set{N}_+$ and a filter rate $\alpha \in \left[0,1\right]$, the filtered strict distance graph $G_\alpha^n=(V,E_\alpha^n)$ is definined as followed:
 	\begin{equation}
 		E_\alpha^n = \left\{ (v_1,v_2) \in E^n \mid r_{G^{n-1}}(v_1,v_2) \geq \alpha \right\}
 	\end{equation}
 \end{envdef}
-The joined filtered graph, that considers all distances up to a given value, is definied analog:
+The joined filtered graph, that considers all distances up to a given value, is defined analog:
 \begin{envdef}[Filtered Joined Distance Graph]
-	Given a graph $G=(V,E)$a distance $n \in \set{N}_+$ and a filter rate $\alpha \in \left[0,1\right]$, the filtered joined distance graph $G_\alpha^{\overline{n}}=(V,E_\alpha^{\overline{n}})$ is definied as followed:
+	Given a graph $G=(V,E)$a distance $n \in \set{N}_+$ and a filter rate $\alpha \in \left[0,1\right]$, the filtered joined distance graph $G_\alpha^{\overline{n}}=(V,E_\alpha^{\overline{n}})$ is defined as followed:
 	\begin{equation}
 		E_\alpha^{\overline{n}} = \bigcup_{i=1}^n E_\alpha^i
 	\end{equation}
 \end{envdef}
-The filtered joined distance graph is not bidirectional. This leads the problem that there are unidirectional edges that are not usable for our result. As Figure~\ref{subfig:opt_graph3} shows, the weakly connected nodes are connected to the semiclique whereas the semiclique is not connected to the satallites. The inter semiclique edges are bidirectional. Based on this fact, a bidirectional graph can be constructed:
+The filtered joined distance graph is not bidirectional. This leads the problem that there are unidirectional edges that are not usable for our result. As Figure~\ref{subfig:opt_graph3} shows, the weakly connected nodes are connected to the semi-clique whereas the semi-clique is not connected to the satellites. The inter semi-clique edges are bidirectional. Based on this fact, a bidirectional graph can be constructed:
 \begin{envdef}[Bidirectional Joined Filtered Distance Graph]
 	Given a graph $G=(V,E)$, a distance $n \in \set{N}_+$ and a filter rate $\alpha \in \left[0,1\right]$, the bidirectional joined filtered graph $\tilde{G}_\alpha^{\overline{n}}=(V,\tilde{E}_\alpha^{\overline{n}})$ is defined by the subset of the bidirectional edges of the joined filtered graph:
 	\begin{equation}
 		\tilde{E}_\alpha^{\overline{n}} = \left\{ (v_1,v_2) \in V^2 \mid (v_1,v_2),(v_2,v_1) \in E_\alpha^{\overline{n}} \right\}
 	\end{equation}
 \end{envdef}
-As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter semiclique edges to join them to cliques without creating senseless connections or resulting in information loosage. It is important that the graph refinement does not slow down the entire process on big data. In other words, it must not have a higher complexity class. Because the distance parameter $n$ is only used for graph fixing and should not depend on the input size, the following theorem can be shown:
+As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter semi-clique edges to join them to cliques without creating senseless connections or resulting in information lossage. It is important that the graph refinement does not slow down the entire process on big data. In other words, it must not have a higher complexity class. Because the distance parameter $n$ is only used for graph fixing and should not depend on the input size, the following theorem can be shown:
 
 \begin{algorithm}
 	\KwData{Vertex $v$}
 	\KwData{Graph $G$}
-	\KwData{Threshold $t$}
+	\KwData{Threshold $t_n$}
 	\KwResult{New neighbors $N$}
 
 	\SetKwFunction{CalcConnectionRate}{calcConnectionRate}
@@ -269,7 +269,7 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 		\tcc{Check all candidates}
 		$N$ $\leftarrow$ $\{\}$\;
 		\For{$c \in C$}{
-			\If{$\CalcConnectionRate{$v$, $c$} \geq t \wedge \CalcConnectionRate{$c$, $v$} \geq t$}{
+			\If{$\CalcConnectionRate{$v$, $c$} \geq t_n \wedge \CalcConnectionRate{$c$, $v$} \geq t_n$}{
 				$N$ $\leftarrow$ $N \cup \{c\}$\;
 			}
 		}
@@ -280,7 +280,7 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 \begin{algorithm}
 	\KwData{Graph $G$}
 	\KwData{Distance $d$}
-	\KwData{Threshold $t$}
+	\KwData{Threshold $t_n$}
 	\KwResult{Refined Graph $G_r$}
 
 	\SetKwFunction{ExtendNeighbors}{extendNeighbors}
@@ -290,7 +290,7 @@ As shown on Figure~\ref{subfig:opt_graph4} this method successfully adds inter s
 		\For{i=2 \emph{\KwTo} $d$}{
 			$G_n$ $\leftarrow$ $()$\;
 			\For{$v \in G_r$}{
-				$G_n$ $\leftarrow$ $G_n \concat \ExtendNeighbors{$v$, $G_r$, $t$}$\;
+				$G_n$ $\leftarrow$ $G_n \concat \ExtendNeighbors{$v$, $G_r$, $t_n$}$\;
 			}
 			$G_r$ $\leftarrow$ $G_n$\;
 		}
@@ -314,9 +314,9 @@ After discussing all parts of the algorithm, I will now wrap up the entire workf
 
 \begin{algorithm}
 	\KwData{Dataset $D$}
-	\KwData{Threshold $p_t$}
-	\KwData{Graph distance $p_d$}
-	\KwData{Threshold of the graph connection rate $p_c$}
+	\KwData{Threshold $t_e$}
+	\KwData{Graph distance $d$}
+	\KwData{Threshold of the graph connection rate $t_n$}
 	\KwResult{Subspaces $S$}
 
 	\SetKwFunction{BuildBins}{buildBins}
@@ -348,7 +348,7 @@ After discussing all parts of the algorithm, I will now wrap up the entire workf
 			\For{$(d_2,m_2,s_2,g_2) \in (D,D_m,D_s,D_g)\setminus\{(d_1,m_1,s_1,g_1)\}$}{
 				$x_1$ $\leftarrow$ $\frac{\CoVar{$d_1$, $d_2$, $m_1$, $m_2$}}{s_1 \cdot s_2}$\;
 				$x_2$ $\leftarrow$ \DimSimilarity{$g_1$, $g_2$}\;
-				\If{$x_1 \cdot x_2 \geq p_t$}{
+				\If{$x_1 \cdot x_2 \geq t_e$}{
 					$n$ $\leftarrow$ $n \cup \{d_2\}$\;
 				}
 			}
@@ -357,7 +357,7 @@ After discussing all parts of the algorithm, I will now wrap up the entire workf
 
 		\BlankLine
 		\tcc{Refine graph}
-		$G_r$ $\leftarrow$ \RefineGraph{$G$, $p_d$, $p_c$}\;
+		$G_r$ $\leftarrow$ \RefineGraph{$G$, $d$, $t_n$}\;
 
 		\BlankLine
 		\tcc{Search cliques (which are our subspaces)}
@@ -367,7 +367,7 @@ After discussing all parts of the algorithm, I will now wrap up the entire workf
 	\label{alg:calcSubspaces}
 \end{algorithm}
 
-First of all, some values that only depend on one dimension are precalculated, this are the mean, the variance and the standard deviation of the dimensions. This step can parallelized at two points. Because the result for one dimension only depends on this dimension itself, the values for multiple dimensions can be calculated independently. The mean and the variance are sums. This sum up can be parallelized can by multiple methods, because all sub sums are independent.
+First of all, some values that only depend on one dimension are pre-calculated, this are the mean, the variance and the standard deviation of the dimensions. This step can parallelized at two points. Because the result for one dimension only depends on this dimension itself, the values for multiple dimensions can be calculated independently. The mean and the variance are sums. This sum up can be parallelized can by multiple methods, because all sub sums are independent.
 
 After this, the discrete bins are created. Because bins are only build on top of the information of one dimension, multiple dimensions can handled in parallel too. The creation of the bins requires that the data is sorted by the actual dimension. This sorting can also be done by a parallel algorithm, e.g. merge sort.
 
