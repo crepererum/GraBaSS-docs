@@ -29,7 +29,7 @@ GraBaSS gets invoked with $t_e = 0.15$, $t_n = 0.65$ and $d = 3$. It tends to gr
 	\item number of persons in a room, manual window state and volume of supply air and used air
 \end{itemize}
 
-The algorithm also produces some less logical results, as the CO2 concentration at some points and the temperature of some parts of the building, but this cases are very rare, so they might be as anomalies.
+The algorithm also produces some less logical results, as the CO2 concentration at some points and the temperature of some parts of the building, but this cases are very rare, so they might be anomalies. The graph fixing works pretty well and reduced the number of similar subspaces.
 
 ENCLUS has a problem with this data set, because it contains some outliers. Some dimensions contains only small data from \num{0.1} to \num{0.2}, but some measures are described by values of \num{100} and more. Because ENCLUS uses an equi-width descretizer and calculates entropy values on this discrete values, it tries to join all dimensions with this kind of outliers. It also destroys some useful subspaces, if you are able to get some results. Because of the size of the data set, the number of affected dimensions and the size of the subspace is also large. This increases calculation of ENCLUS to calculate the results, so it does not finish within hours.
 
