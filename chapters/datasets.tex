@@ -75,7 +75,7 @@ I used the pendigits, ozone and musk data set from the UCI Machine Learning Repo
 	\caption{Test results}
 	\label{tab:tests}
 	\centering
-	\begin{tabular}{lrrrrr}
+	\begin{tabularx}{0.95\textwidth}{lRRRRR}
 		\toprule
 		\textbf{Data set} & \textbf{GraBaSS} & \textbf{ENCLUS} & \textbf{PCA} & \textbf{Random} & \textbf{Fullspace} \\
 		\midrule
@@ -83,7 +83,7 @@ I used the pendigits, ozone and musk data set from the UCI Machine Learning Repo
 		ozone & \textbf{\num[detect-weight]{0.66}} & \num{0.53} & \num{0.48} & \num{0.51} & \num{0.51} \\
 		musk & \textbf{\num[detect-weight]{0.74}} & \num{0.60} & \num{0.52} & \num{0.63} & \num{0.44} \\
 		\bottomrule
-	\end{tabular}
+	\end{tabularx}
 \end{table}
 
 The pendigits data set\footnote{\url{https://archive.ics.uci.edu/ml/datasets/Pen-Based+Recognition+of+Handwritten+Digits}} was prepared by choosing the smallest class and sampling this class down to create outliers. GraBaSS was invoked with $t_e = 0.003$, $t_n = 0.65$, $d = 2$ and $f_\mathrm{post} = 12.5$. The post filter stripped \num{5} 4-dimensional subspaces so it finally found \num{12} subspaces. I started ENCLUS with $\epsilon = 37$, $\omega = 12.745$ and $\xi = 82$ and I got \num{8} subspaces.
@@ -110,7 +110,7 @@ In all cases it was easier to get good subspaces from GraBaSS as from ENCLUS bec
 	\subfloat[\label{subtab:objs}Synthetic data set with \num{100} dimensions]{
 		\begin{tabularx}{0.95\textwidth}{lRRRRRR}
 			\toprule
-			\# Objects & \num{10000} & \num{20000} & \num{40000} & \num{60000} & \num{80000} & \num{100000} \\
+			\#Objects & \num{10000} & \num{20000} & \num{40000} & \num{60000} & \num{80000} & \num{100000} \\
 			\midrule
 			Binning & \SI{39}{\percent} & \SI{40}{\percent} & \SI{41}{\percent} & \SI{40}{\percent} & \SI{41}{\percent} & \SI{41}{\percent} \\
 			Pre-calulation & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
@@ -125,7 +125,7 @@ In all cases it was easier to get good subspaces from GraBaSS as from ENCLUS bec
 	\subfloat[\label{subtab:dims}Synthetic data set with \num{10000} objects]{
 		\begin{tabularx}{0.95\textwidth}{lRRRRRR}
 			\toprule
-			\# Dimensions & \num{100} & \num{200} & \num{400} & \num{600} & \num{800} & \num{1000} \\
+			\#Dimensions & \num{100} & \num{200} & \num{400} & \num{600} & \num{800} & \num{1000} \\
 			\midrule
 			Binning & \SI{39}{\percent} & \SI{26}{\percent} & \SI{29}{\percent} & \SI{18}{\percent} & \SI{17}{\percent} & \SI{14}{\percent} \\
 			Pre-calulation & \multicolumn{6}{c}{\SI{< 1}{\percent}} \\
@@ -162,10 +162,10 @@ In all cases it was easier to get good subspaces from GraBaSS as from ENCLUS bec
 		\toprule
 		$t_e$ & \num{1} & \num{e-1} & \num{e-2} & \num{e-3} & \num{e-4} & \num{e-5} \\
 		\midrule
-		\# Edges & \num{0} & \num{1594} & \num{10546} & \num{18866} & \num{22087} & \num{22921} \\
-		Max. \# neighbors & \num{0} & \num{53} & \num{178} & \num{236} & \num{257} & \num{261} \\
+		\#Edges & \num{0} & \num{1594} & \num{10546} & \num{18866} & \num{22087} & \num{22921} \\
+		Max. \#neighbors & \num{0} & \num{53} & \num{178} & \num{236} & \num{257} & \num{261} \\
 		Degeneracy & \num{0} & \num{42} & \num{112} & \num{178} & \num{200} & \num{208} \\
-		\# Cliques & \num{272} & \num{134} & \num{2202} & \num{6977} & \num{13951} & \num{23557} \\
+		\#Cliques & \num{272} & \num{134} & \num{2202} & \num{6977} & \num{13951} & \num{23557} \\
 		\midrule
 		Graph build-up & \SI{48}{\percent} & \SI{48}{\percent} & \SI{44}{\percent} & \SI{45}{\percent} & \SI{44}{\percent} & \SI{42}{\percent} \\
 		Graph fixing & \SI{< 1}{\percent} & \SI{< 1}{\percent} & \SI{19}{\percent} & \SI{21}{\percent} & \SI{24}{\percent} & \SI{25}{\percent} \\
