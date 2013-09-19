@@ -1,0 +1,39 @@
+\documentclass{scrartcl}
+
+% packages
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{libertine}
+
+
+% microtype
+\usepackage[
+	activate={true,nocompatibility},% activate protrusion and expansion
+	final,% enable microtype; use "draft" to disable
+	tracking=true,% activate these techniques
+	kerning=true,% -''-
+	spacing=basictext,% activate and supress warning
+	factor=1100,% add 10% to the protrusion amount (default is 1000)
+	stretch=10,% reduce stretchability/shrinkability (default is 20/20)
+	shrink=10% -''-
+]{microtype}
+\microtypecontext{spacing=nonfrench}
+
+\title{Zusammenfassung Bachelorarbeit GraBaSS}
+\author{Marco Neumann}
+
+\begin{document}
+	\maketitle
+	Im 21. Jahrhundert, dem Zeitalter der Informationsverarbeitung, werden die zu verarbeitenden Datensätze immer größer. Nicht nur die Anzahl der Datenpunkte wächst, sondern auch die Menge der Dimensionen, die gemessen werden, vergrößert sich ständig. Dies macht es zunehmend schwieriger, traditionelle Verfahren wie Clustering und Outlier Detection auf den kompletten Datensatz anzuwenden. Die Algorithmen werden nicht nur langsamer, sondern sie verlieren auch an Genauigkeit, ein Fakt, der als "`Fluch der Dimensionalität"' bekannt ist. Verfahren, die dieses Problem zu lösen versuchen, gibt es schon lange. Sie werden unter dem Begriff Feature Selection zusammengefasst und gruppieren Dimensionen in sogenannte Subspaces. Der Datensatz wird anschließend auf diese Subspaces projiziert und so dass sich klassische Verfahren darauf anwenden lassen. Leider besitzen die meisten Algorithmen zur Feature Selection eine so hohe algorithmische Komplexität, dass sie sie bei einer großen Anzahl von Dimensionen selbst nicht mehr anwendbar sind.
+
+	Zur Lösung dieses Problem stelle ich den Algorithmus "`Graph-based Subspace Search"', zu deutsch "`Graph-basierende Subspace Suche"' oder kurz GraBaSS vor. Er transformiert das Subspace Suchproblem in ein Graph-Problem. Dazu wird das Konzept der Ähnlichkeit eingeführt. Dies ist eine symmetrische Funktion, die 2 Dimensionen eines Datensatzes auf den Wertebereich $[0,1]$ abbildet, wobei $1$ für "`sehr ähnlich"' und $0$ für "`nicht ähnlich"' steht. Nach Betrachtung verschiedener Verfahren komme ich zu dem Schluss, dass das Produkt aus normalisierter Mutual Information und dem absoluten Pearson Korrelationskoeffizienten sich am besten als allgemeines Ähnlichkeitsmaß für Dimensionen eignet. Durch einen vom Analysten vorgegeben Schwellwert, den diese Ähnlichkeit erreichen muss, werden die paarweisen Beziehungen zwischen allen Dimensionen zu einem Graphen transformiert. Dabei stellen die Dimensionen die Knoten und die mögliche hinreichende Ähnlichkeit die Kanten dar. Auf den Graphen wird eine Clique Suche angewandt, um die gewünschten Subspaces zu finden.
+
+	Das Verfahren produziert durch die strikte Cliquen-Suche in vielen Fällen jedoch Subspaces, die sehr ähnlich sind und für Analysten schwer zu überschauen sind. Um das Problem zu lösen, wird der Graph vor der Cliquen-Suche modifiziert. Dabei werden Kanten zu Nachbarn 2. Ordnung hinzugefügt, wenn diese mit den Nachbarn 1. Ordnung hinreichend stark verbunden sind. Dieses Kriterium ist nicht bidirektional. Neue, unidirektionale Kanten werden ignoriert, was schlussendlich zu dem gewünschten Ergebnis führt. Wie sich in den Tests herausstellt, funktioniert das Verfahren sehr gut und hat auf die Performance nur sehr wenig Einfluss.
+
+	Für die Tests wird eine eigene, hochperformante Implementierung verwendet. Sie ist in C++11 geschrieben und ermöglicht durch ein einfaches und effizientes Daten-Backend sowie Parallelisierung eine Effizienz, die weit über die üblichen Werkzeuge hinausgeht.
+
+	Da GraBaSS im Gegenteil zu Vergleichsverfahren wie ENCLUS nicht versucht, die Subspaces für bestimmte Zwecke zu optimieren, sondern sie nach der Ähnlichkeit der Dimensionen ermittelt, werden die von GraBaSS ermittelten Subspaces vor dem Vergleichstest extra gefiltert. Dazu werden alle Subspaces entfernt, die eine zu niedrige Entropie besitzen. Danach werden die Outlier mittels LOF ermittelt. Neben ENCLUS werden PCA, der volle Datensatz und zufällige Subspaces zum Vergleich herangezogen. GraBaSS produziert die besten Resultate. Es sei angemerkt, dass ENCLUS durchaus besser abschneiden könnte, wenn man ihm exorbitant viel Zeit zur Verfügung stellt. Auch bei manuellen Tests, wobei die Subspaces auf ihren Sinn geprüft werden und bei Skalierungstests schneidet GraBaSS gut ab.
+
+	Für die weitere Forschung verbleiben eine verteilte Implementierung, welche mögliche Beschleuniger wie GPUs und FPGAs nutzen kann, ein besserer Filter von Subspaces, ein möglicher Filter von Dimensionen schon vor dem Verfahren, eine (semi-)automatische Parametererkennung, mehr Evaluation von Ähnlichkeitsmaßen, besonders für spezialisierte Anwendungen sowie inkrementelle Verfahren für wachsende Datenbestände.
+\end{document}
